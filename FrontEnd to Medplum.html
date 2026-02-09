@@ -1,0 +1,745 @@
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  User, 
+  MapPin, 
+  ChevronLeft, 
+  Check, 
+  Lock, 
+  ShieldCheck, 
+  Utensils, 
+  Activity, 
+  Brain, 
+  ArrowRight,
+  AlertCircle,
+  Briefcase,
+  Eye, 
+  EyeOff,
+  Mail,
+  Phone,
+  X,
+  FileText,
+  HeartHandshake,
+  Home,
+  CheckCircle2,
+  Contact2,
+  HeartPulse,
+  Stethoscope,
+  Car,
+  Plus,
+  Users,
+  Building2,
+  Shield,
+  Zap,
+  ClipboardCheck
+} from 'lucide-react';
+
+/**
+ * BRANDING ASSETS & TOKENS
+ * BG: White (#FFFFFF)
+ * Navy: #1B263B | Gold: #C5A059 | Garnet: #7B241C | Cream: #F5F5F0
+ */
+
+const BrandLogo = ({ className = "h-16 w-auto" }) => (
+  <svg viewBox="0 0 550 100" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(10, 20) scale(1.2)">
+      <circle cx="20" cy="18" r="8" fill="#1B263B" />
+      <path 
+        d="M38 30 C 38 48, 5 48, 5 30 C 5 22, 10 15, 18 10" 
+        stroke="#1B263B" 
+        strokeWidth="6" 
+        strokeLinecap="round" 
+        fill="none" 
+      />
+      <path 
+        d="M22 50 C 45 50, 50 35, 50 25 C 50 15, 42 8, 35 8" 
+        stroke="#C5A059" 
+        strokeWidth="5" 
+        strokeLinecap="round" 
+        fill="none" 
+      />
+      <circle cx="48" cy="40" r="7" fill="#C5A059" />
+    </g>
+    <text x="105" y="68" className="fill-[#1B263B]" style={{ fontFamily: 'Lora, serif', fontWeight: '600', fontSize: '48px' }}>
+      FindAHomeCare
+    </text>
+  </svg>
+);
+
+const BrandProvider = ({ children }) => (
+  <div className="font-body text-[#36454F] antialiased selection:bg-[#C5A059] selection:text-white bg-white min-h-screen flex flex-col items-center justify-center p-4 overflow-x-hidden">
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Lora:wght@600&display=swap');
+      :root {
+        --color-navy: #1B263B;
+        --color-gold: #C5A059;
+        --color-garnet: #7B241C;
+        --color-cream: #F5F5F0;
+        --color-text: #36454F;
+      }
+      .font-heading { font-family: 'Roboto', sans-serif; font-weight: 700; }
+      .font-body { font-family: 'Roboto', sans-serif; font-weight: 300; }
+      
+      /* Metallic Button/Icon Gradients (No Borders) */
+      .metallic-gold {
+        background: linear-gradient(145deg, #e3c485 0%, #C5A059 50%, #b08d45 100%);
+      }
+      .metallic-garnet {
+        background: linear-gradient(145deg, #9b3d33 0%, #7B241C 50%, #5a1a14 100%);
+      }
+      .metallic-navy {
+        background: linear-gradient(145deg, #2c3e5a 0%, #1B263B 50%, #0d1420 100%);
+      }
+      
+      .btn-brand-primary {
+        border-radius: 4px;
+        letter-spacing: 0.5px; 
+        font-weight: 700;
+        display: inline-flex; 
+        align-items: center; 
+        justify-content: center; 
+        padding: 15px 30px;
+        color: white;
+        border: none !important;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.2);
+        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
+      }
+      
+      .card-shadow-gold { box-shadow: 4px 4px 0px var(--color-gold); border: 1px solid #E5E7EB; }
+      .card-shadow-garnet { box-shadow: 4px 4px 0px var(--color-garnet); border: 1px solid #E5E7EB; }
+      .card-shadow-navy { box-shadow: 4px 4px 0px var(--color-navy); border: 1px solid #E5E7EB; }
+      
+      .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: #F5F5F0; border-radius: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: #C5A059; border-radius: 4px; }
+    `}</style>
+    <div className="w-full max-w-6xl flex flex-col items-center justify-center">
+        {children}
+    </div>
+  </div>
+);
+
+/**
+ * FULL VERBATIM TERMS OF USE MODAL (Wide + Short + Internal Margins)
+ */
+const TermsModal = ({ isOpen, onClose }) => {
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#1B263B]/60 backdrop-blur-sm text-left"
+        >
+          <motion.div 
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="bg-white w-full rounded-lg shadow-2xl flex flex-col overflow-hidden border border-[#E5E7EB]"
+            style={{ maxWidth: '732px', maxHeight: 'calc(85vh - 60px)' }} 
+          >
+            <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
+              <h2 className="text-xl font-bold text-[#1B263B] font-serif">Website terms of use</h2>
+              <button onClick={onClose} className="p-2 hover:bg-stone-100 rounded-full transition-colors"><X size={24}/></button>
+            </div>
+            <div className="p-8 overflow-y-auto custom-scrollbar bg-[#FDFDFD]">
+              <div className="text-[#36454F] space-y-6 text-base leading-relaxed p-[10px]">
+                <div className="pb-4 border-b border-gray-300">
+                  <p className="font-bold text-lg text-[#1B263B]">FIND A HOME CARE, LLC — WEBSITE TERMS OF USE</p>
+                  <p className="text-sm font-bold text-[#7B241C] mt-1 italic">(End-User Terms & Conditions)</p>
+                  <p className="text-xs font-bold text-[#36454F]">Effective Date: December 9, 2025</p>
+                </div>
+                
+                <p>These Terms of Use (“Terms”) govern your access to and use of the website located at FindAHomeCare.com and any related tools, forms, portals, and services (collectively, the “Platform”) operated by Find A Home Care, LLC, a Delaware limited liability company (“FindAHomeCare,” “we,” “us,” or “our”).</p>
+                
+                <p className="font-bold italic">By accessing or using the Platform, you agree to be bound by these Terms. If you do not agree, discontinue use immediately.</p>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">1. Nature of Services — Referral Platform Only</h3>
+                  <p>FindAHomeCare is a non-clinical digital referral platform designed to connect families with licensed home care providers, assisted living facilities, and related service agencies. FindAHomeCare:</p>
+                  <ul className="list-disc pl-8 space-y-1">
+                    <li>Does not provide medical, nursing, or home care services;</li>
+                    <li>Does not employ or supervise caregivers;</li>
+                    <li>Does not recommend or endorse any particular provider;</li>
+                    <li>Acts solely as an intermediary to facilitate introductions between users and providers.</li>
+                  </ul>
+                  <p>All decisions regarding provider selection, contracting, or care arrangements are made exclusively between the user and the provider.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">2. No Medical Advice</h3>
+                  <p>All information on the Platform, including articles, listings, care descriptions, or communications, is for informational purposes only and is not a substitute for professional medical, nursing, legal, or financial advice. Nothing on the Platform constitutes a diagnosis, treatment recommendation, clinical judgment, or guarantee of provider performance.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">3. User Eligibility and Accounts</h3>
+                  <p>To submit information or request provider matches, you must: Be at least 18 years old; Provide accurate and complete information; Not impersonate another person or entity; Not use the Platform for fraudulent or unlawful purposes. Where the Platform offers user accounts or logins, you are responsible for maintaining confidentiality of your credentials and all activity under your account. Notify us immediately of unauthorized access.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">4. Permitted Use & Acceptable Use Policy</h3>
+                  <p>You may use the Platform solely for personal, non-commercial purposes related to seeking home care information or provider introductions. You agree not to: Circumvent lead routing; Scrape, copy, or harvest provider information; Upload viruses, malware, or harmful code; Interfere with Platform operations or security; Use bots, automated tools, or scraping programs; Engage in abusive, harmful, or unlawful conduct. We may suspend or terminate access for any violation of these Terms.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">5. Provider Listings and Directory Accuracy</h3>
+                  <p>Provider profiles, amenities, pricing, availability, and service descriptions are submitted by providers or third-party data sources. We do not guarantee that listings are current, accurate, or complete. Users are solely responsible for verifying: Provider licensure and compliance; Pricing and service availability; Caregiver qualifications; Insurance, background checks, and operational standards. FindAHomeCare does not guarantee the quality, safety, or suitability of any provider.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">6. Submission of Information & PHI Handling</h3>
+                  <p>By submitting information through the Platform, you authorize FindAHomeCare to: Receive and store your information, including health-related details; Share relevant information with matched providers; Contact you via phone, SMS, or email regarding your inquiry; Use your information to operate and improve referral processes. HIPAA Notice: When information submitted constitutes Protected Health Information (PHI), FindAHomeCare acts as a Business Associate under applicable Business Associate Agreements (BAAs). PHI is safeguarded through administrative, physical, and technical controls consistent with HIPAA.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">7. No Guarantee of Provider Availability or Outcomes</h3>
+                  <p>FindAHomeCare does not guarantee: That a provider will accept a referral; That a referral will result in care services; The availability, pricing, or quality of care; Any outcome, improvement, or safety measure; The professional conduct or behavior of providers or caregivers. All service arrangements are between the user and the provider.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">8. Intellectual Property Rights</h3>
+                  <p>All text, graphics, forms, software, trademarks, logos, and other content on the Platform are the exclusive property of FindAHomeCare or its licensors. You may not copy, distribute, modify, reverse-engineer, or commercially exploit any Platform content without prior written permission.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">9. Limitation of Liability</h3>
+                  <p>To the fullest extent permitted by law, FindAHomeCare shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from: Your interactions with providers; Provider behavior, negligence, or performance; Errors or inaccuracies in provider listings; Service interruptions, downtime, or data loss; Decisions made based on Platform content. In no event shall FindAHomeCare’s aggregate liability exceed $500 or the total amount paid by you to FindAHomeCare in the 12 months preceding the claim, whichever is less.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">10. Warranty Disclaimer</h3>
+                  <p>The Platform is provided “as is” and “as available,” without any warranties of any kind, express or implied. FindAHomeCare disclaims all warranties, including merchantability, fitness for a particular purpose, non-infringement, accuracy, completeness, and uninterrupted availability.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">11. Indemnification</h3>
+                  <p>You agree to indemnify, defend, and hold harmless FindAHomeCare, its officers, employees, contractors, and affiliates from any claims, liabilities, damages, or expenses arising from: Your use or misuse of the Platform; Your interactions or contracts with providers; Your violation of these Terms; Your submission of inaccurate or unauthorized information.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">12. Third-Party Links and Services</h3>
+                  <p>The Platform may include links to third-party websites or services. FindAHomeCare does not control and is not responsible for any third-party content, policies, or practices. Accessing third-party resources is at your own risk.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">13. Governing Law & Dispute Resolution</h3>
+                  <p>These Terms are governed by the laws of the State of California, without regard to conflict-of-law principles. Disputes shall be resolved as follows: Informal resolution: written notice and a 30-day negotiation period; Binding arbitration in Santa Clara County, California, under AAA rules; No class actions, consolidated claims, or representative actions.</p>
+                </section>
+
+                <section className="space-y-3">
+                  <h3 className="font-bold text-[#1B263B] border-b border-gray-200 pb-1">14. Modifications to Terms</h3>
+                  <p>FindAHomeCare may update or revise these Terms at any time by posting an updated version on the Platform. Continued use of the Platform after changes constitutes acceptance of the revised Terms.</p>
+                </section>
+
+                <section className="pt-6 border-t border-gray-200 text-center italic">
+                  <p className="font-bold text-[#1B263B]">Find A Home Care, LLC</p>
+                  <p>Phone: (650) 677-1711 | Email: info@findahomecare.com</p>
+                </section>
+              </div>
+            </div>
+            <div className="px-6 py-5 border-t bg-white flex justify-center">
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onClose} 
+                className="btn-brand-primary min-w-[240px] metallic-gold"
+              >
+                Close and return
+              </motion.button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+/**
+ * SHARED COMPONENTS
+ */
+
+const SocialAuthButtons = () => (
+  <div className="space-y-3 w-full">
+    <motion.button 
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      type="button" 
+      className="w-full flex items-center justify-center space-x-3 p-3.5 border border-[#D1D5DB] rounded bg-white text-[#1B263B] font-bold hover:bg-[#F5F5F0] transition-all shadow-sm"
+    >
+      <svg className="w-5 h-5" viewBox="0 0 24 24">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+      </svg>
+      <span className="uppercase text-[11px] tracking-widest font-bold">Join with Google</span>
+    </motion.button>
+    <motion.button 
+      whileHover={{ scale: 1.01 }}
+      whileTap={{ scale: 0.99 }}
+      type="button" 
+      className="w-full flex items-center justify-center space-x-3 p-3.5 border border-[#D1D5DB] rounded bg-white text-[#1B263B] font-bold hover:bg-[#F5F5F0] transition-all shadow-sm"
+    >
+      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M17.05 20.28c-.98.95-2.05 1.88-3.5 1.86-1.36-.02-2.58-.8-3.41-.8-1.47 0-3.08.78-3.77.8-1.38.02-2.92-1.09-4.32-3.14-2.14-3.09-1.61-7.7.66-9.67 1.4-1.22 3.1-1.31 4.23-1.22 1.09.08 2.53.81 3.23.81.65 0 2.22-.91 3.86-.78 1.95.16 3.43 1.02 4.19 2.15-3.37 1.67-2.79 6.22.61 7.6-.53 1.44-1.22 2.88-1.78 3.39zM12.03 7.25c-.19-1.57.88-3.09 1.96-3.95 1.11-.91 2.94-1.56 3.04.1.09 1.69-1.29 3.19-2.17 3.86-.96.75-2.64 1.34-2.83-.01z" />
+      </svg>
+      <span className="uppercase text-[11px] tracking-widest font-bold">Join with Apple</span>
+    </motion.button>
+  </div>
+);
+
+const Header = ({ logo, step, totalSteps, onBack, accentColor }) => (
+  <header className="bg-white/95 backdrop-blur-md border-b border-[#D1D5DB] fixed top-0 left-0 w-full z-50">
+    <div className="max-w-7xl mx-auto px-8 h-24 flex items-center justify-between">
+      <motion.div 
+        whileHover={{ scale: 1.02 }}
+        className="flex-shrink-0 cursor-pointer" 
+        onClick={onBack}
+      >
+        {logo}
+      </motion.div>
+      {step && totalSteps && (
+        <motion.div 
+          initial={{ opacity: 0, x: 10 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="text-sm font-bold text-[#708090] uppercase tracking-widest font-heading"
+        >
+          Step {step} of {totalSteps}
+        </motion.div>
+      )}
+    </div>
+    {step && totalSteps && (
+      <div className="w-full bg-[#D1D5DB] h-1 mt-24">
+        <motion.div 
+          initial={{ width: 0 }}
+          animate={{ width: `${(step / totalSteps) * 100}%` }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className={`${accentColor} h-1`}
+        ></motion.div>
+      </div>
+    )}
+  </header>
+);
+
+const Navigation = ({ step, onBack, onNext, flowColorClass }) => (
+  <div className="mt-14 flex items-center justify-between gap-6 max-w-md w-full mx-auto">
+    <motion.button 
+      whileHover={{ x: -3 }}
+      onClick={onBack} 
+      className="flex items-center text-[#708090] hover:text-[#1B263B] font-bold px-6 py-4 uppercase tracking-widest text-sm font-heading transition-colors"
+    >
+      <ChevronLeft size={20} className="mr-1" /> Back
+    </motion.button>
+    <motion.button 
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onNext} 
+      className={`btn-brand-primary min-w-[200px] py-5 ${flowColorClass}`}
+    >
+      Continue
+    </motion.button>
+  </div>
+);
+
+const SelectionCardMain = ({ icon, title, desc, bulletPoints, onClick, metallicClass, btnLabel, shadowClass }) => (
+  <motion.div 
+    whileHover={{ y: -5 }}
+    className={`flex flex-col h-full bg-white rounded-lg p-10 items-center justify-center text-center transition-all ${shadowClass}`}
+  >
+    <div className={`mb-8 p-6 rounded-full text-white ${metallicClass}`}>{icon}</div>
+    <h3 className="text-2xl font-heading font-bold text-[#1B263B] mb-3">{title}</h3>
+    <p className="text-base font-light text-[#36454F] leading-relaxed mb-6">{desc}</p>
+    
+    <ul className="space-y-3 mb-10 w-full text-left max-w-[240px] mx-auto">
+        {bulletPoints.map((bp, i) => (
+            <li key={i} className="flex items-center text-sm text-[#36454F]">
+                <Check size={14} className="mr-2 text-[#C5A059]" strokeWidth={3} />
+                {bp}
+            </li>
+        ))}
+    </ul>
+
+    <motion.button 
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick} 
+      className={`w-full py-4 rounded-lg font-bold transition-all btn-brand-primary ${metallicClass}`}
+    >
+      {btnLabel}
+    </motion.button>
+  </motion.div>
+);
+
+const SelectionCard = ({ title, subtitle, selected, onClick }) => (
+  <motion.button 
+    whileHover={{ scale: 1.01 }}
+    whileTap={{ scale: 0.99 }}
+    onClick={onClick} 
+    className={`w-full p-8 rounded-lg border text-left transition-all duration-300 group card-shadow bg-white ${selected ? 'border-[#1B263B] ring-1 ring-[#1B263B]/10' : 'border-[#D1D5DB] hover:border-[#C5A059]'}`}
+  >
+    <div className="flex items-center justify-between">
+      <div>
+          <h3 className={`text-2xl font-bold font-heading ${selected ? 'text-[#1B263B]' : 'text-[#36454F]'}`}>{title}</h3>
+          <p className="text-base text-[#708090] mt-1 font-light italic">{subtitle}</p>
+      </div>
+      <div className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all ${selected ? 'border-[#1B263B] bg-[#1B263B]' : 'border-[#D1D5DB]'}`}>{selected && <Check size={20} className="text-white" strokeWidth={3} />}</div>
+    </div>
+  </motion.button>
+);
+
+const NeedCard = ({ icon, title, selected, onToggle }) => (
+  <motion.button 
+    whileHover={{ scale: 1.01 }}
+    whileTap={{ scale: 0.99 }}
+    onClick={onToggle} 
+    className={`flex items-center w-full p-7 rounded-lg border border-[#D1D5DB] cursor-pointer transition-all duration-300 select-none card-shadow bg-white ${selected ? 'bg-[#EAE8E4] border-[#1B263B]' : 'hover:border-[#C5A059]'} text-left group`}
+  >
+    <div className="mr-6 transform transition-transform group-hover:scale-110 text-[#C5A059]">{icon}</div>
+    <div className="flex-1 font-bold text-lg text-[#1B263B] font-heading">{title}</div>
+    <div className={`w-7 h-7 rounded border flex items-center justify-center transition-all ${selected ? 'bg-[#1B263B] border-[#1B263B]' : 'border-[#D1D5DB] bg-white'}`}>{selected && <Check size={18} className="text-white" strokeWidth={3}/>}</div>
+  </motion.button>
+);
+
+/**
+ * LOGIC VIEWS
+ */
+
+function AccountStep({ title, formData, updateField, flowColorClass }) {
+  const [showPass, setShowPass] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
+  return (
+    <div className="animate-fade-in space-y-10 w-full text-center">
+      <div>
+        <Contact2 size={64} className="text-[#1B263B] mx-auto mb-4" />
+        <h1 className="text-4xl font-bold text-[#1B263B] font-heading">{title}</h1>
+        <p className="text-[#36454F] font-light mt-1 italic text-lg">Provide your details to connect with our network.</p>
+      </div>
+      <div className="bg-white p-10 rounded-lg card-shadow border border-[#D1D5DB] space-y-8 text-left max-w-lg mx-auto">
+        <SocialAuthButtons />
+        <div className="relative flex py-4 items-center">
+          <div className="flex-grow border-t border-[#D1D5DB]"></div>
+          <span className="flex-shrink-0 mx-4 text-gray-400 text-[11px] font-bold uppercase tracking-widest">Or join with email</span>
+          <div className="flex-grow border-t border-[#D1D5DB]"></div>
+        </div>
+        <div className="space-y-5">
+          <input type="text" value={formData.name || ''} onChange={(e)=>updateField('name', e.target.value)} className="w-full p-4 bg-[#F9F7F2] border border-[#D1D5DB] rounded outline-none focus:border-[#C5A059] font-light text-lg" placeholder="Full name" />
+          <input type="email" value={formData.email || ''} onChange={(e)=>updateField('email', e.target.value)} className="w-full p-4 bg-[#F9F7F2] border border-[#D1D5DB] rounded outline-none focus:border-[#C5A059] font-light text-lg" placeholder="Email address" />
+          <input type="tel" value={formData.phone || ''} onChange={(e)=>updateField('phone', e.target.value)} className="w-full p-4 bg-[#F9F7F2] border border-[#D1D5DB] rounded outline-none focus:border-[#C5A059] font-light text-lg" placeholder="Phone number" />
+          <div className="relative">
+            <input type={showPass ? "text" : "password"} value={formData.password || ''} onChange={(e)=>updateField('password', e.target.value)} className="w-full p-4 bg-[#F9F7F2] border border-[#D1D5DB] rounded outline-none focus:border-[#C5A059] font-light text-lg" placeholder="Create password" />
+            <button type="button" onClick={()=>setShowPass(!showPass)} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 p-1 hover:text-[#1B263B] transition-colors"><Eye size={20} /></button>
+          </div>
+        </div>
+        <label className="flex items-start space-x-4 cursor-pointer pt-6 border-t border-[#D1D5DB]">
+          <input type="checkbox" checked={formData.termsAccepted || false} onChange={(e)=>updateField('termsAccepted', e.target.checked)} className="mt-1 h-5 w-5 text-[#C5A059] rounded" />
+          <span className="text-sm text-[#36454F] font-light leading-snug">
+            I agree to the <button type="button" onClick={()=>setShowTerms(true)} className="text-[#7B241C] font-bold underline hover:text-[#1B263B] transition-all">terms of use</button> and privacy policy.
+          </span>
+        </label>
+      </div>
+      <TermsModal isOpen={showTerms} onClose={() => setShowTerms(false)} />
+    </div>
+  );
+}
+
+function SuccessStep({ title, desc, btnText, flowColorClass }) {
+  return (
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="animate-fade-in text-center py-10 space-y-8 flex flex-col items-center justify-center flex-grow"
+      >
+          <div className="w-32 h-32 bg-[#EAE8E4] rounded-full flex items-center justify-center mx-auto shadow-sm text-[#C5A059]"><CheckCircle2 size={80} strokeWidth={2} /></div>
+          <h1 className="text-5xl font-bold text-[#1B263B] font-heading tracking-tight">{title}</h1>
+          <p className="text-xl text-[#36454F] font-light max-w-md italic">{desc}</p>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`btn-brand-primary min-w-[300px] py-6 uppercase tracking-widest text-lg ${flowColorClass}`} 
+            onClick={() => window.location.reload()}
+          >
+            {btnText}
+          </motion.button>
+      </motion.div>
+  );
+}
+
+/**
+ * APP ENTRY
+ */
+
+export default function App() {
+  const [currentView, setCurrentView] = useState('welcome');
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'seeker': return <SeekerFlow onBack={() => setCurrentView('welcome')} />;
+      case 'provider': return <ProviderFlow onBack={() => setCurrentView('welcome')} />;
+      case 'rcfe': return <ProvideHomeFlow onBack={() => setCurrentView('welcome')} />;
+      case 'login': return <LoginScreen onBack={() => setCurrentView('welcome')} onSignUp={() => setCurrentView('welcome')} />;
+      default: return (
+        <motion.div 
+          key="gateway"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          className="flex flex-col items-center justify-center w-full animate-fade-in text-center py-20"
+        >
+          <WelcomeGateway onSelect={setCurrentView} />
+        </motion.div>
+      );
+    }
+  };
+
+  return <BrandProvider>{renderView()}</BrandProvider>;
+}
+
+function WelcomeGateway({ onSelect }) {
+  return (
+    <>
+      <div className="mb-12"><BrandLogo /></div>
+      
+      {/* Header Clean Navy Text */}
+      <h1 className="text-4xl md:text-6xl font-heading font-bold text-[#1B263B] mb-2 tracking-tight uppercase">How can we help?</h1>
+      <p className="text-[#1B263B] mb-16 max-w-xl text-lg font-bold leading-relaxed italic text-center">Trusted introductions for families and care professionals.</p>
+      
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl">
+        <SelectionCardMain 
+          icon={<User size={40}/>} 
+          title="Find care" 
+          desc="Seeking a home caregiver or a licensed care facility." 
+          bulletPoints={["Browse verified caregivers", "Manage appointments", "Free to search"]}
+          onClick={() => onSelect('seeker')} 
+          metallicClass="metallic-gold"
+          shadowClass="card-shadow-gold"
+          btnLabel="I'm looking for care"
+        />
+        <SelectionCardMain 
+          icon={<Stethoscope size={40}/>} 
+          title="Provide care" 
+          desc="I am a licensed individual professional or home care agency." 
+          bulletPoints={["Agency Dashboard", "Staff Management", "Referral Network"]}
+          onClick={() => onSelect('provider')} 
+          metallicClass="metallic-garnet"
+          shadowClass="card-shadow-garnet"
+          btnLabel="Join as a provider"
+        />
+        <SelectionCardMain 
+          icon={<Home size={40}/>} 
+          title="Provide home" 
+          desc="I operate a licensed Board & Care, RCFE, or Assisted Living." 
+          bulletPoints={["Facility Listing", "Vacancy Management", "Family Matching"]}
+          onClick={() => onSelect('rcfe')} 
+          metallicClass="metallic-navy"
+          shadowClass="card-shadow-navy"
+          btnLabel="Register facility"
+        />
+      </div>
+
+      <p className="mt-20 text-sm text-[#36454F] font-light italic text-center">Already a partner? <button onClick={() => onSelect('login')} className="text-[#C5A059] font-bold uppercase tracking-widest text-[10px] ml-2 hover:underline transition-all">Log in</button></p>
+    </>
+  );
+}
+
+function SeekerFlow({ onBack }) {
+    const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({ role: '', zip: '', needs: [], name: '', email: '', phone: '', password: '', termsAccepted: false });
+    const updateField = (f, v) => setFormData(prev => ({ ...prev, [f]: v }));
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex flex-col items-center justify-center w-full"
+      >
+        <Header logo={<BrandLogo className="h-12 w-auto" />} step={step} totalSteps={4} onBack={onBack} accentColor="bg-[#C5A059]" />
+        <main className="max-w-3xl mx-auto w-full px-4 py-16 flex flex-col items-center justify-center text-center mt-20">
+          {step === 1 && (
+            <div className="animate-fade-in space-y-10 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading">Who is this care for?</h1>
+              <div className="space-y-4 max-w-md mx-auto">
+                <SelectionCard title="A loved one" subtitle="Spouse, parent, or relative" selected={formData.role === 'loved'} onClick={() => updateField('role', 'loved')} />
+                <SelectionCard title="Myself" subtitle="I'm seeking help for myself" selected={formData.role === 'myself'} onClick={() => updateField('role', 'myself')} />
+              </div>
+            </div>
+          )}
+          {step === 2 && (
+            <div className="text-center animate-fade-in space-y-10 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading text-center">Where is care needed?</h1>
+              <div className="bg-white p-14 rounded-lg card-shadow border border-[#D1D5DB] w-full max-w-2xl mx-auto flex items-center justify-center px-10 overflow-hidden">
+                <input type="tel" maxLength={5} value={formData.zip} onChange={(e) => updateField('zip', e.target.value.replace(/\D/g, ''))} className="w-full text-center text-6xl font-bold text-[#1B263B] border-b-2 border-[#D1D5DB] focus:border-[#C5A059] outline-none py-4 bg-transparent min-w-[340px]" placeholder="Enter Zip Code" />
+              </div>
+            </div>
+          )}
+          {step === 3 && (
+            <div className="animate-fade-in space-y-8 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading">How can we help?</h1>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl mx-auto">
+                {[
+                  { id: 'pc', title: 'Personal care', icon: <HeartPulse size={28}/> },
+                  { id: 'sn', title: 'Skilled nursing', icon: <Stethoscope size={28}/> },
+                  { id: 'th', title: 'Therapy', icon: <Activity size={28}/> },
+                  { id: 'tr', title: 'Transportation', icon: <Car size={28}/> },
+                  { id: 'cp', title: 'Companionship', icon: <Users size={28}/> },
+                  { id: 'ot', title: 'Others', icon: <Plus size={28}/> }
+                ].map(item => (
+                  <NeedCard key={item.id} icon={item.icon} title={item.title} selected={formData.needs.includes(item.id)} onToggle={() => updateField('needs', formData.needs.includes(item.id) ? formData.needs.filter(n=>n!==item.id) : [...formData.needs, item.id])} />
+                ))}
+              </div>
+            </div>
+          )}
+          {step === 4 && <AccountStep title="Join our community" formData={formData} updateField={updateField} flowColorClass="metallic-gold" />}
+          {step < 5 && <Navigation step={step} onBack={step === 1 ? onBack : () => setStep(s => s - 1)} onNext={() => setStep(s => s + 1)} flowColorClass="metallic-gold" />}
+          {step === 5 && <SuccessStep title="Success!" desc="We found local providers who match your needs." btnText="Explore results" flowColorClass="metallic-gold" />}
+        </main>
+      </motion.div>
+    );
+}
+
+function ProviderFlow({ onBack }) {
+    const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({ type: '', zip: '', name: '', email: '', phone: '', password: '', termsAccepted: false, hasStateLicense: false, hasBizLicense: false });
+    const updateField = (f, v) => setFormData(prev => ({ ...prev, [f]: v }));
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex flex-col items-center justify-center w-full"
+      >
+        <Header logo={<BrandLogo className="h-12 w-auto" />} step={step} totalSteps={4} onBack={onBack} accentColor="bg-[#7B241C]" />
+        <main className="max-w-3xl mx-auto w-full px-4 py-16 flex-grow flex flex-col items-center justify-center text-center mt-20">
+          {step === 1 && (
+            <div className="animate-fade-in space-y-10 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading">How do you provide care?</h1>
+              <div className="space-y-4 max-w-md mx-auto">
+                <SelectionCard title="Individual professional" subtitle="I provide care directly to families" selected={formData.type === 'ind'} onClick={() => updateField('type', 'ind')} />
+                <SelectionCard title="Care agency" subtitle="I manage a professional team" selected={formData.type === 'age'} onClick={() => updateField('type', 'age')} />
+              </div>
+            </div>
+          )}
+          {step === 2 && (
+            <div className="text-center animate-fade-in space-y-10 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading text-center text-center text-center">Where do you provide care?</h1>
+              <div className="bg-white p-14 rounded-lg card-shadow border border-[#D1D5DB] w-full max-w-2xl mx-auto flex items-center justify-center px-10 overflow-hidden">
+                <input type="tel" maxLength={5} value={formData.zip} onChange={(e) => updateField('zip', e.target.value.replace(/\D/g, ''))} className="w-full text-center text-6xl font-bold text-[#1B263B] border-b-2 border-[#D1D5DB] focus:border-[#7B241C] outline-none py-4 bg-transparent min-w-[320px]" placeholder="Enter Zip Code" />
+              </div>
+            </div>
+          )}
+          {step === 3 && (
+            <div className="animate-fade-in space-y-10 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading">Your credentials</h1>
+              <div className="bg-white p-10 rounded-lg card-shadow border border-[#D1D5DB] space-y-6 max-md mx-auto">
+                 <label className="flex items-center space-x-4 p-5 border border-gray-100 rounded hover:bg-stone-50 cursor-pointer text-left transition-all">
+                    <ShieldCheck size={28} className={formData.hasStateLicense ? 'text-emerald-600' : 'text-stone-300'} />
+                    <div className="flex-1"><div className="font-bold text-lg text-[#1B263B]">State license</div><div className="text-xs text-stone-500 italic">I have a valid and current license</div></div>
+                    <input type="checkbox" checked={formData.hasStateLicense} onChange={(e)=>updateField('hasStateLicense', e.target.checked)} className="h-7 w-7 text-[#1B263B]" />
+                 </label>
+                 {formData.type === 'age' && (
+                   <label className="flex items-center space-x-4 p-5 border rounded hover:bg-stone-50 cursor-pointer text-left transition-all">
+                      <Building2 size={28} className={formData.hasBizLicense ? 'text-emerald-600' : 'text-stone-300'} />
+                      <div className="flex-1"><div className="font-bold text-lg text-[#1B263B]">Business license</div><div className="text-xs text-stone-500 italic">I have a current business license</div></div>
+                      <input type="checkbox" checked={formData.hasBizLicense} onChange={(e)=>updateField('hasBizLicense', e.target.checked)} className="h-7 w-7 text-[#1B263B]" />
+                   </label>
+                 )}
+              </div>
+            </div>
+          )}
+          {step === 4 && <AccountStep title="Complete your profile" formData={formData} updateField={updateField} flowColorClass="metallic-garnet" />}
+          {step < 5 && <Navigation step={step} onBack={step === 1 ? onBack : () => setStep(s => s - 1)} onNext={() => setStep(s => s + 1)} flowColorClass="metallic-garnet" />}
+          {step === 5 && <SuccessStep title="Success!" desc="Our team will review your application shortly." btnText="Go to dashboard" flowColorClass="metallic-garnet" />}
+        </main>
+      </motion.div>
+    );
+}
+
+function ProvideHomeFlow({ onBack }) {
+    const [step, setStep] = useState(1);
+    const [formData, setFormData] = useState({ facilityName: '', address: '', zip: '', types: [], email: '', phone: '', name: '', password: '', termsAccepted: false });
+    const updateField = (f, v) => setFormData(prev => ({ ...prev, [f]: v }));
+
+    return (
+      <motion.div 
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        className="flex flex-col items-center justify-center w-full"
+      >
+        <Header logo={<BrandLogo className="h-12 w-auto" />} step={step} totalSteps={4} onBack={onBack} accentColor="bg-[#1B263B]" />
+        <main className="max-w-3xl mx-auto w-full px-4 py-12 flex flex-col items-center justify-center text-center mt-20">
+          {step === 1 && (
+            <div className="animate-fade-in space-y-8 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading text-center">Facility information</h1>
+              <div className="bg-white p-10 rounded-lg card-shadow border border-[#D1D5DB] space-y-6 max-lg mx-auto text-left">
+                <div className="space-y-4">
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#1B263B]">Facility name</label>
+                    <input value={formData.facilityName} onChange={(e)=>updateField('facilityName', e.target.value)} type="text" className="w-full p-4 bg-[#F9F7F2] border border-gray-100 rounded outline-none focus:border-[#C5A059] font-light text-lg" placeholder="e.g. Hilltop Senior Living" />
+                    <label className="text-[10px] font-bold uppercase tracking-widest text-[#1B263B]">Street address</label>
+                    <textarea value={formData.address} onChange={(e)=>updateField('address', e.target.value)} rows="2" className="w-full p-4 bg-[#F9F7F2] border border-gray-100 rounded outline-none focus:border-[#C5A059] font-light text-lg" placeholder="Full address, city, state"></textarea>
+                </div>
+              </div>
+            </div>
+          )}
+          {step === 2 && (
+            <div className="text-center animate-fade-in space-y-10 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading text-center text-center text-center text-center text-center text-center">Where is your facility located?</h1>
+              <div className="bg-white p-14 rounded-lg card-shadow border border-[#D1D5DB] w-full max-w-2xl mx-auto flex items-center justify-center px-10 overflow-hidden">
+                <input type="tel" maxLength={5} value={formData.zip} onChange={(e) => updateField('zip', e.target.value.replace(/\D/g, ''))} className="w-full text-center text-6xl font-bold text-[#1B263B] border-b-2 border-[#D1D5DB] focus:border-[#C5A059] outline-none py-4 bg-transparent min-w-[340px]" placeholder="Enter Zip Code" />
+              </div>
+            </div>
+          )}
+          {step === 3 && (
+            <div className="animate-fade-in space-y-8 w-full">
+              <h1 className="text-4xl font-bold text-[#1B263B] font-heading">Specializations</h1>
+              <div className="space-y-4 max-w-md mx-auto">
+                {['Assisted living', 'Memory care', 'Hospice/respite'].map(t => (
+                  <NeedCard key={t} icon={<Home size={28}/>} title={t} selected={formData.types.includes(t)} onToggle={() => updateField('types', formData.types.includes(t) ? formData.types.filter(x=>x!==t) : [...formData.types, t])} />
+                ))}
+              </div>
+            </div>
+          )}
+          {step === 4 && <AccountStep title="Finalize registration" formData={formData} updateField={updateField} flowColorClass="metallic-navy" />}
+          {step < 5 && <Navigation step={step} onBack={step === 1 ? onBack : () => setStep(s => s - 1)} onNext={() => setStep(s => s + 1)} flowColorClass="metallic-navy" />}
+          {step === 5 && <SuccessStep title="Success!" desc="Your home application has been received." btnText="Go to dashboard" flowColorClass="metallic-navy" />}
+        </main>
+      </motion.div>
+    );
+}
+
+function LoginScreen({ onBack, onSignUp }) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="flex flex-col items-center justify-center w-full min-h-screen"
+      >
+      <Header logo={<BrandLogo className="h-10 w-auto" />} step={null} totalSteps={null} onBack={onBack} accentColor="bg-gold" />
+      <div className="flex-grow flex flex-col items-center justify-center px-4 text-center mt-20">
+          <h1 className="text-5xl font-heading font-bold text-[#1B263B] mb-10 tracking-tight uppercase">Sign in</h1>
+          <div className="bg-white p-12 card-shadow rounded-lg space-y-8 text-left w-full max-w-lg mx-auto border border-[#D1D5DB]">
+              <SocialAuthButtons />
+              <div className="relative flex py-4 items-center">
+                <div className="flex-grow border-t border-[#D1D5DB]"></div>
+                <span className="flex-shrink-0 mx-4 text-gray-400 text-xs font-bold uppercase tracking-widest font-body">Or sign in with email</span>
+                <div className="flex-grow border-t border-[#D1D5DB]"></div>
+              </div>
+              <div className="space-y-6">
+                <input className="w-full p-4 border border-[#D1D5DB] rounded font-light outline-none focus:border-[#C5A059] bg-[#FDFDFD] text-lg" placeholder="Email"/>
+                <input className="w-full p-4 border border-[#D1D5DB] rounded font-light outline-none focus:border-[#C5A059] bg-[#FDFDFD] text-lg" type="password" placeholder="Password"/>
+              </div>
+              <motion.button 
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full btn-brand-primary py-5 metallic-navy"
+              >
+                Log in
+              </motion.button>
+              <div className="text-center pt-4">
+                <button onClick={onSignUp} className="text-[#C5A059] font-bold uppercase tracking-widest text-xs hover:underline transition-all">Join our community</button>
+              </div>
+          </div>
+          <button className="w-full text-xs font-bold uppercase text-[#708090] tracking-widest mt-12 hover:text-[#1B263B] transition-colors font-heading" onClick={onBack}>Cancel</button>
+      </div>
+      </motion.div>
+    );
+}

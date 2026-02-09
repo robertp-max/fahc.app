@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find A Home Care | Provider Workspace</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Merriweather', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            navy: '#1B365D',  /* Deep Navy */
+                            gold: '#C5A065',  /* Muted Gold/Sand */
+                            sand: '#F5F0E6',  /* Light Sand Background */
+                            text: '#334155',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F8F9FA; color: #334155; }
+        .scroller::-webkit-scrollbar { width: 6px; }
+        .scroller::-webkit-scrollbar-track { background: transparent; }
+        .scroller::-webkit-scrollbar-thumb { background-color: #CBD5E1; border-radius: 20px; }
+        .hover-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .hover-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        .nav-active { background-color: rgba(255,255,255,0.1); color: white; border-left-color: #C5A065; }
+        .nav-inactive { color: #D1D5DB; border-left-color: transparent; }
+        .nav-inactive:hover { background-color: rgba(255,255,255,0.05); color: white; }
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden font-sans">
+
+    <!-- Left Sidebar -->
+    <aside class="w-64 bg-brand-navy text-white flex flex-col flex-shrink-0 z-20 transition-all duration-300">
+        <!-- Logo -->
+        <div class="h-20 flex items-center px-6 border-b border-white/10">
+            <div class="w-8 h-8 rounded-full border-2 border-brand-gold flex items-center justify-center text-brand-gold font-serif font-bold text-xl mr-3">F</div>
+            <div>
+                <h1 class="font-serif font-bold text-lg tracking-wide text-white leading-tight">Find A<br>Home Care</h1>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="flex-1 py-6 space-y-1 px-3">
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">My Workspace</p>
+            
+            <button onclick="router('dashboard')" id="nav-dashboard" class="w-full flex items-center px-3 py-3 rounded-md border-l-4 transition-colors group nav-active">
+                <i class="fa-solid fa-inbox w-6 text-center text-brand-gold"></i>
+                <span class="ml-3 font-medium">Referral Queue</span>
+                <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">3</span>
+            </button>
+
+            <button onclick="router('patients')" id="nav-patients" class="w-full flex items-center px-3 py-3 rounded-md border-l-4 transition-colors group nav-inactive">
+                <i class="fa-solid fa-users w-6 text-center group-hover:text-brand-gold"></i>
+                <span class="ml-3 font-medium">Active Patients</span>
+            </button>
+
+            <button onclick="router('revenue')" id="nav-revenue" class="w-full flex items-center px-3 py-3 rounded-md border-l-4 transition-colors group nav-inactive">
+                <i class="fa-solid fa-file-invoice-dollar w-6 text-center group-hover:text-brand-gold"></i>
+                <span class="ml-3 font-medium">Revenue & Reports</span>
+            </button>
+
+            <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mt-8 mb-2">Agency Admin</p>
+
+            <button onclick="router('compliance')" id="nav-compliance" class="w-full flex items-center px-3 py-3 rounded-md border-l-4 transition-colors group nav-inactive">
+                <i class="fa-solid fa-clipboard-check w-6 text-center group-hover:text-brand-gold"></i>
+                <span class="ml-3 font-medium">Compliance</span>
+                <i class="fa-solid fa-circle-check text-green-400 ml-auto text-xs"></i>
+            </button>
+
+            <button onclick="router('listing')" id="nav-listing" class="w-full flex items-center px-3 py-3 rounded-md border-l-4 transition-colors group nav-inactive">
+                <i class="fa-solid fa-building w-6 text-center group-hover:text-brand-gold"></i>
+                <span class="ml-3 font-medium">Listing Profile</span>
+            </button>
+        </nav>
+
+        <!-- User Profile -->
+        <div class="p-4 border-t border-white/10 bg-black/20">
+            <div class="flex items-center">
+                <img src="https://ui-avatars.com/api/?name=Margaret+W&background=C5A065&color=fff" alt="User" class="w-9 h-9 rounded-full border border-gray-600">
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-white">Margaret W.</p>
+                    <p class="text-xs text-gray-400">Golden Age Care</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col min-w-0 bg-brand-sand/30 relative h-full">
+        
+        <!-- Header (Dynamic) -->
+        <header class="h-20 bg-white border-b border-gray-200 shadow-sm px-8 flex items-center justify-between z-10 flex-shrink-0">
+            <div>
+                <h2 id="page-title" class="font-serif text-2xl text-brand-navy font-bold">Good Morning, Margaret</h2>
+                <p id="page-subtitle" class="text-sm text-gray-500 font-sans">Here is your referral pipeline overview for today.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden md:block">
+                    <p class="text-xs text-gray-400 uppercase font-bold tracking-wider">Agency Status</p>
+                    <div class="flex items-center justify-end gap-1 text-green-600 font-medium text-sm">
+                        <i class="fa-solid fa-shield-heart"></i> Verified & Active
+                    </div>
+                </div>
+                <div class="h-8 w-px bg-gray-200 mx-2"></div>
+                <button class="bg-brand-navy text-white px-4 py-2 rounded shadow hover:bg-blue-900 transition text-sm font-medium">
+                    <i class="fa-solid fa-plus mr-2"></i> Quick Action
+                </button>
+            </div>
+        </header>
+
+        <!-- VIEWS Container -->
+        <div class="flex-1 overflow-hidden relative">
+            
+            <!-- VIEW 1: DASHBOARD (Referral Queue) -->
+            <div id="view-dashboard" class="absolute inset-0 overflow-y-auto scroller p-8 fade-in">
+                
+                <!-- Metric Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-lg p-5 border border-gray-100 shadow-sm hover-card border-l-4 border-l-brand-gold">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">In-Basket</p>
+                                <h3 class="text-3xl font-serif text-brand-navy font-bold mt-1">3 <span class="text-base font-sans font-normal text-gray-500">New</span></h3>
+                            </div>
+                            <div class="p-2 bg-yellow-50 rounded text-brand-gold"><i class="fa-solid fa-bell"></i></div>
+                        </div>
+                        <p class="text-xs text-gray-500">Oldest referral waiting: <span class="font-bold text-red-600">2h 15m</span></p>
+                    </div>
+                    <div class="bg-white rounded-lg p-5 border border-gray-100 shadow-sm hover-card border-l-4 border-l-blue-500">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Active Cases</p>
+                                <h3 class="text-3xl font-serif text-brand-navy font-bold mt-1">12 <span class="text-base font-sans font-normal text-gray-500">Patients</span></h3>
+                            </div>
+                            <div class="p-2 bg-blue-50 rounded text-blue-600"><i class="fa-solid fa-user-clock"></i></div>
+                        </div>
+                        <p class="text-xs text-gray-500">4 pending assessment scheduling</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-5 border border-gray-100 shadow-sm hover-card border-l-4 border-l-green-500 flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider font-sans">Monthly Revenue</p>
+                                <h3 class="text-2xl font-serif text-brand-navy font-bold mt-1">$42.5k</h3>
+                            </div>
+                            <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">+12%</span>
+                        </div>
+                        <div class="h-10 w-full mt-2"><canvas id="sparkline"></canvas></div>
+                    </div>
+                </div>
+
+                <!-- Main Queue Interface -->
+                <div class="flex flex-col lg:flex-row gap-6 h-[600px]">
+                    <!-- List -->
+                    <div class="w-full lg:w-5/12 bg-white border border-gray-200 rounded-lg shadow-sm flex flex-col">
+                        <div class="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-lg">
+                            <h3 class="font-serif font-bold text-brand-navy">Referral Workqueue</h3>
+                            <div class="flex gap-2 text-xs">
+                                <button class="px-2 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:text-brand-navy">Filter</button>
+                                <button class="px-2 py-1 bg-white border border-gray-300 rounded text-gray-600 hover:text-brand-navy">Sort</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 overflow-y-auto scroller" id="referral-list"></div>
+                    </div>
+                    <!-- Detail Panel -->
+                    <div class="hidden lg:flex flex-1 bg-white border border-gray-200 rounded-lg shadow-sm flex-col relative overflow-hidden">
+                         <!-- Empty State -->
+                         <div id="detail-empty" class="absolute inset-0 flex flex-col items-center justify-center text-gray-400 bg-gray-50 z-0">
+                            <i class="fa-regular fa-folder-open text-5xl mb-4 opacity-50"></i>
+                            <p class="text-sm font-serif">Select a referral to view clinical details.</p>
+                        </div>
+                        <!-- Active Content -->
+                        <div id="active-content" class="hidden flex-col h-full w-full z-10 bg-white">
+                            <div class="px-6 py-5 border-b border-gray-100 flex justify-between items-start bg-white">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <h2 class="font-serif text-xl font-bold text-brand-navy" id="d-name">Patient Name</h2>
+                                        <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide bg-brand-gold/20 text-brand-navy border border-brand-gold/30" id="d-source">Hospital</span>
+                                    </div>
+                                    <p class="text-sm text-gray-500">Referral ID: <span class="font-mono text-xs text-gray-400" id="d-id">#000</span></p>
+                                </div>
+                                <div class="text-right">
+                                    <span class="block text-xs text-gray-400 font-bold uppercase">Received</span>
+                                    <span class="block text-sm font-bold text-brand-navy" id="d-time">2h ago</span>
+                                </div>
+                            </div>
+                            <div class="px-6 py-4 bg-gray-50 border-b border-gray-100">
+                                <div class="flex items-center w-full">
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full bg-brand-navy text-white text-xs flex items-center justify-center"><i class="fa-solid fa-check"></i></div>
+                                        <span class="text-[10px] font-bold text-brand-navy mt-1">Received</span>
+                                    </div>
+                                    <div class="h-0.5 flex-1 bg-brand-navy mx-2"></div>
+                                    <div class="flex flex-col items-center">
+                                        <div class="w-6 h-6 rounded-full bg-white border-2 border-brand-navy text-brand-navy text-xs flex items-center justify-center font-bold">2</div>
+                                        <span class="text-[10px] font-bold text-brand-navy mt-1">Contact</span>
+                                    </div>
+                                    <div class="h-0.5 flex-1 bg-gray-300 mx-2"></div>
+                                    <div class="flex flex-col items-center opacity-50">
+                                        <div class="w-6 h-6 rounded-full bg-white border-2 border-gray-400 text-gray-400 text-xs flex items-center justify-center font-bold">3</div>
+                                        <span class="text-[10px] font-bold text-gray-500 mt-1">Assess</span>
+                                    </div>
+                                    <div class="h-0.5 flex-1 bg-gray-300 mx-2"></div>
+                                    <div class="flex flex-col items-center opacity-50">
+                                        <div class="w-6 h-6 rounded-full bg-white border-2 border-gray-400 text-gray-400 text-xs flex items-center justify-center font-bold">4</div>
+                                        <span class="text-[10px] font-bold text-gray-500 mt-1">Admit</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="flex-1 overflow-y-auto p-6">
+                                <h4 class="font-serif font-bold text-brand-navy mb-4 border-b border-gray-100 pb-2">Clinical Context</h4>
+                                <div class="grid grid-cols-2 gap-y-6 gap-x-4">
+                                    <div><p class="text-xs text-gray-400 uppercase font-bold mb-1">Primary Need</p><p class="text-sm text-gray-800 leading-relaxed" id="d-needs">Needs.</p></div>
+                                    <div><p class="text-xs text-gray-400 uppercase font-bold mb-1">Insurance</p><p class="text-sm text-gray-800 font-medium">Medicare Advantage (Verified)</p></div>
+                                    <div><p class="text-xs text-gray-400 uppercase font-bold mb-1">Location</p><p class="text-sm text-gray-800" id="d-loc">Location</p></div>
+                                </div>
+                                <div class="mt-8 bg-yellow-50 p-4 rounded border border-yellow-200">
+                                    <h5 class="text-xs font-bold text-yellow-800 uppercase mb-2"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Provider Note</h5>
+                                    <p class="text-xs text-yellow-900">Ensure caregiver is comfortable with pets.</p>
+                                </div>
+                            </div>
+                            <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+                                <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded text-sm font-medium hover:bg-gray-100 shadow-sm transition">Decline / Refer</button>
+                                <button onclick="acceptReferral()" class="px-5 py-2 bg-brand-navy text-white rounded text-sm font-medium hover:bg-blue-900 shadow-md transition flex items-center"><i class="fa-solid fa-check mr-2"></i> Accept & Contact</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: ACTIVE PATIENTS -->
+            <div id="view-patients" class="absolute inset-0 overflow-y-auto scroller p-8 hidden fade-in">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200 flex justify-between items-center">
+                        <h3 class="font-serif text-xl font-bold text-brand-navy">Active Patient Roster</h3>
+                        <div class="relative">
+                            <input type="text" placeholder="Search patients..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-md text-sm focus:ring-brand-navy focus:border-brand-navy">
+                            <i class="fa-solid fa-search absolute left-3 top-3 text-gray-400 text-xs"></i>
+                        </div>
+                    </div>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-xs uppercase font-bold border-b border-gray-200">
+                                <th class="p-4">Patient Name</th>
+                                <th class="p-4">Admitted Date</th>
+                                <th class="p-4">Care Plan Status</th>
+                                <th class="p-4">Next Visit</th>
+                                <th class="p-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 font-bold text-brand-navy">James Peterson</td>
+                                <td class="p-4 text-gray-600">Oct 12, 2025</td>
+                                <td class="p-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span></td>
+                                <td class="p-4 text-gray-600">Tomorrow, 9:00 AM</td>
+                                <td class="p-4 text-right"><button class="text-brand-navy hover:underline">View Chart</button></td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 font-bold text-brand-navy">Linda Wei</td>
+                                <td class="p-4 text-gray-600">Nov 01, 2025</td>
+                                <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-bold">Review Needed</span></td>
+                                <td class="p-4 text-gray-600">Today, 2:00 PM</td>
+                                <td class="p-4 text-right"><button class="text-brand-navy hover:underline">View Chart</button></td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="p-4 font-bold text-brand-navy">Robert Johnson</td>
+                                <td class="p-4 text-gray-600">Sep 28, 2025</td>
+                                <td class="p-4"><span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-bold">Active</span></td>
+                                <td class="p-4 text-gray-600">Fri, 10:00 AM</td>
+                                <td class="p-4 text-right"><button class="text-brand-navy hover:underline">View Chart</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- VIEW 3: REVENUE -->
+            <div id="view-revenue" class="absolute inset-0 overflow-y-auto scroller p-8 hidden fade-in">
+                <div class="max-w-3xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200 bg-brand-navy text-white rounded-t-lg">
+                        <h3 class="font-serif text-xl font-bold">Revenue Reporting Wizard</h3>
+                        <p class="text-sm text-blue-100 opacity-80 mt-1">Submit monthly revenue for active referrals.</p>
+                    </div>
+                    <div class="p-8">
+                        <!-- Step Indicator -->
+                        <div class="flex items-center mb-8">
+                            <div class="w-8 h-8 rounded-full bg-brand-gold text-white flex items-center justify-center font-bold">1</div>
+                            <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold">2</div>
+                            <div class="flex-1 h-1 bg-gray-200 mx-2"></div>
+                            <div class="w-8 h-8 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center font-bold">3</div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 mb-2">Reporting Period</label>
+                                <select class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-navy">
+                                    <option>October 2025</option>
+                                    <option>September 2025</option>
+                                </select>
+                            </div>
+
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <h4 class="font-bold text-brand-navy mb-2 text-sm">Active Referrals Found (3)</h4>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                                        <span class="text-sm font-medium">James Peterson</span>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                            <input type="number" placeholder="0.00" class="pl-6 pr-3 py-1 border border-gray-300 rounded text-right w-32 focus:ring-brand-navy">
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center justify-between bg-white p-3 rounded border border-gray-200">
+                                        <span class="text-sm font-medium">Linda Wei</span>
+                                        <div class="relative">
+                                            <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                            <input type="number" placeholder="0.00" class="pl-6 pr-3 py-1 border border-gray-300 rounded text-right w-32 focus:ring-brand-navy">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 flex justify-end">
+                            <button class="bg-brand-navy text-white px-6 py-3 rounded-lg font-medium hover:bg-blue-900 transition shadow">Review & Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 4: COMPLIANCE -->
+            <div id="view-compliance" class="absolute inset-0 overflow-y-auto scroller p-8 hidden fade-in">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div class="p-6 border-b border-gray-200">
+                        <h3 class="font-serif text-xl font-bold text-brand-navy">Compliance Documents</h3>
+                        <p class="text-sm text-gray-500 mt-1">Manage your agency licensure and insurance requirements.</p>
+                    </div>
+                    <div class="p-6 grid gap-4">
+                        <!-- Red Item -->
+                        <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-red-500">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center font-bold"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">State Business License</h4>
+                                    <p class="text-xs text-red-600 font-bold">Expired: Oct 01, 2025</p>
+                                </div>
+                            </div>
+                            <button class="px-4 py-2 bg-white border border-gray-300 text-gray-700 font-medium rounded hover:bg-gray-50">Upload Renewal</button>
+                        </div>
+
+                        <!-- Green Item -->
+                        <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-green-500 opacity-75">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold"><i class="fa-solid fa-check"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Liability Insurance</h4>
+                                    <p class="text-xs text-green-600 font-bold">Valid until 2026</p>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 text-sm hover:text-gray-600">View</button>
+                        </div>
+
+                        <!-- Green Item -->
+                        <div class="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-green-500 opacity-75">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center font-bold"><i class="fa-solid fa-check"></i></div>
+                                <div>
+                                    <h4 class="font-bold text-gray-800">Background Checks (Global)</h4>
+                                    <p class="text-xs text-green-600 font-bold">Up to date</p>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 text-sm hover:text-gray-600">View</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+             <!-- VIEW 5: LISTING -->
+             <div id="view-listing" class="absolute inset-0 overflow-y-auto scroller p-8 hidden fade-in">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="h-32 bg-brand-navy relative">
+                         <div class="absolute -bottom-10 left-8">
+                            <div class="w-24 h-24 bg-white p-1 rounded-lg shadow-md">
+                                <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 rounded">Logo</div>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="pt-12 px-8 pb-8">
+                        <div class="flex justify-between items-start">
+                             <div>
+                                <h2 class="font-serif text-2xl font-bold text-brand-navy">Golden Age Care</h2>
+                                <p class="text-sm text-gray-500">San Jose, CA • License #HC-1928394</p>
+                             </div>
+                             <button class="px-4 py-2 bg-brand-navy text-white rounded text-sm hover:bg-blue-900">Edit Profile</button>
+                        </div>
+                        
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">About Us</h4>
+                                <p class="text-sm text-gray-600 leading-relaxed">Providing compassionate in-home care services for seniors in the South Bay area since 2010. We specialize in post-surgical recovery and dementia support.</p>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-800 border-b border-gray-100 pb-2 mb-4">Service Areas</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs">San Jose</span>
+                                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs">Santa Clara</span>
+                                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs">Sunnyvale</span>
+                                    <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs">Campbell</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+             </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- Router Logic ---
+        function router(viewId) {
+            // 1. Hide all views
+            const views = ['dashboard', 'patients', 'revenue', 'compliance', 'listing'];
+            views.forEach(id => {
+                document.getElementById(`view-${id}`).classList.add('hidden');
+            });
+
+            // 2. Show active view
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            // 3. Update Headers
+            const headerMap = {
+                'dashboard': { title: 'Good Morning, Margaret', sub: 'Here is your referral pipeline overview for today.' },
+                'patients': { title: 'Patient Management', sub: 'Manage care plans and active rosters.' },
+                'revenue': { title: 'Revenue & Reporting', sub: 'Submit monthly reports and view history.' },
+                'compliance': { title: 'Agency Compliance', sub: 'Ensure your documentation is up to date.' },
+                'listing': { title: 'Public Profile', sub: 'Manage how families see your agency.' }
+            };
+            document.getElementById('page-title').innerText = headerMap[viewId].title;
+            document.getElementById('page-subtitle').innerText = headerMap[viewId].sub;
+
+            // 4. Update Sidebar Styles
+            const navs = ['nav-dashboard', 'nav-patients', 'nav-revenue', 'nav-compliance', 'nav-listing'];
+            navs.forEach(navId => {
+                const el = document.getElementById(navId);
+                // remove active class
+                el.classList.remove('nav-active', 'bg-white/10', 'text-white', 'border-l-brand-gold');
+                // add inactive class
+                el.classList.add('nav-inactive', 'text-gray-300', 'border-l-transparent');
+            });
+            
+            // Activate current nav
+            const activeEl = document.getElementById(`nav-${viewId}`);
+            activeEl.classList.remove('nav-inactive', 'text-gray-300', 'border-l-transparent');
+            activeEl.classList.add('nav-active');
+        }
+
+        // --- Dashboard Logic (Referral Queue) ---
+        const referrals = [
+            { id: '1024', name: 'Eleanor R.', loc: 'Sunnyvale', time: '10m', urgency: 'high', needs: 'Post-op Hip Surgery. Mobility assist required.', source: 'El Camino Hospital' },
+            { id: '1023', name: 'Arthur M.', loc: 'Mountain View', time: '45m', urgency: 'med', needs: 'Dementia Care (Stage 2). Companionship.', source: 'Direct Family' },
+            { id: '1022', name: 'Sarah L.', loc: 'San Jose', time: '2h', urgency: 'med', needs: 'Respite Care for weekend.', source: 'Kaiser Permanente' },
+        ];
+        let activeId = null;
+
+        function renderQueue() {
+            const list = document.getElementById('referral-list');
+            list.innerHTML = referrals.map(ref => `
+                <div onclick="selectReferral('${ref.id}')" class="p-4 border-b border-gray-100 cursor-pointer hover:bg-brand-sand/30 transition-colors group ${activeId === ref.id ? 'bg-brand-sand/50 border-l-4 border-l-brand-navy pl-3' : 'border-l-4 border-l-transparent'}">
+                    <div class="flex justify-between items-start mb-1">
+                        <div class="flex items-center gap-2">
+                            ${ref.urgency === 'high' ? '<i class="fa-solid fa-bolt text-red-500 text-xs animate-pulse"></i>' : ''}
+                            <span class="font-serif font-bold text-brand-navy group-hover:text-blue-800">${ref.name}</span>
+                        </div>
+                        <span class="text-xs font-mono text-gray-400">${ref.time}</span>
+                    </div>
+                    <div class="flex justify-between items-end">
+                        <p class="text-xs text-gray-500 truncate w-32">${ref.needs}</p>
+                        <span class="text-[10px] uppercase font-bold text-gray-400 tracking-wider">${ref.loc}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectReferral(id) {
+            activeId = id;
+            renderQueue();
+            const ref = referrals.find(r => r.id === id);
+            
+            document.getElementById('d-name').textContent = ref.name;
+            document.getElementById('d-id').textContent = `#REF-${ref.id}`;
+            document.getElementById('d-time').textContent = `${ref.time} ago`;
+            document.getElementById('d-needs').textContent = ref.needs;
+            document.getElementById('d-loc').textContent = `${ref.loc}, CA`;
+            document.getElementById('d-source').textContent = ref.source;
+
+            document.getElementById('detail-empty').classList.add('hidden');
+            document.getElementById('active-content').classList.remove('hidden');
+            document.getElementById('active-content').classList.add('flex');
+        }
+
+        function acceptReferral() {
+            if(!activeId) return;
+            // Simulate action
+            alert(`Referral #${activeId} accepted! Moving to Active Patients.`);
+            document.getElementById('active-content').classList.add('hidden');
+            document.getElementById('detail-empty').classList.remove('hidden');
+            activeId = null;
+            renderQueue();
+        }
+
+        // --- Chart ---
+        const ctx = document.getElementById('sparkline').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['1', '2', '3', '4', '5', '6', '7'],
+                datasets: [{ data: [12, 19, 15, 25, 22, 30, 28], borderColor: '#10B981', borderWidth: 2, tension: 0.4, pointRadius: 0, fill: false }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } } }
+        });
+
+        // Init
+        renderQueue();
+    </script>
+</body>
+</html>

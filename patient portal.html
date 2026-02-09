@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find A Home Care | Patient Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        /* --- BRANDING TOKENS (WCAG COMPLIANT - NO BLUE) --- */
+        :root {
+            /* Primary: Emerald 600 - High Contrast against white */
+            --brand-primary: #059669;   
+            /* Hover: Emerald 700 */
+            --brand-primary-dark: #047857; 
+            /* Secondary: Slate 900 */
+            --brand-secondary: #0F172A; 
+            /* Surface: Slate 50 */
+            --brand-surface: #F8FAFC;   
+            --brand-font: 'Inter', sans-serif;
+        }
+        
+        body { font-family: var(--brand-font); background-color: var(--brand-surface); color: #334155; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- WIZARD STYLES --- */
+        .step-panel { display: none; }
+        .step-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
+        
+        /* Radio Card Selection - Accessible High Contrast */
+        .care-card-radio:checked + div {
+            border-color: var(--brand-primary);
+            border-width: 2px;
+            background-color: #ecfdf5; /* emerald-50 */
+            box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+        }
+        .care-card-radio:checked + div .check-icon { display: block; }
+        .care-card-radio:checked + div .icon-circle { background-color: #d1fae5; color: var(--brand-primary); }
+        .care-card-radio:focus + div { ring: 2px solid var(--brand-primary); }
+
+        /* Tabs */
+        .tab-active { color: var(--brand-primary); border-bottom-color: var(--brand-primary); }
+        .tab-inactive { color: #64748b; border-bottom-color: transparent; }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 300px;
+        }
+        
+        /* Utility for Buttons */
+        .btn-primary {
+            background-color: var(--brand-primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: var(--brand-primary-dark);
+        }
+        .btn-primary:focus {
+            outline: 2px solid var(--brand-primary-dark);
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+    <!-- App Root (Injected via JS) -->
+    <div id="root" class="flex w-full h-full"></div>
+
+    <!-- CARE REQUEST WIZARD MODAL -->
+    <div id="wizard-modal" class="fixed inset-0 bg-slate-900/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="wizard-title">
+        <div class="bg-white w-full max-w-4xl h-[90vh] md:h-auto md:max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col fade-in relative">
+            
+            <!-- Wizard Header -->
+            <div class="bg-slate-900 text-white px-6 py-4 flex justify-between items-center flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-emerald-600 rounded-lg flex items-center justify-center font-bold text-white">
+                        <i class="fas fa-hand-holding-medical"></i>
+                    </div>
+                    <div>
+                        <h3 id="wizard-title" class="font-bold text-lg">Request Care</h3>
+                        <p class="text-xs text-slate-400">Step <span id="wiz-step-num">1</span> of 3</p>
+                    </div>
+                </div>
+                <button onclick="closeWizard()" class="text-slate-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-white rounded p-1" aria-label="Close Wizard">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Wizard Body -->
+            <div class="flex-1 overflow-y-auto p-6 md:p-8 bg-slate-50">
+                
+                <!-- STEP 1: CARE TYPE -->
+                <div id="step-1" class="step-panel active">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2">What type of care do you need?</h2>
+                    <p class="text-slate-600 mb-8">Select the service category.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="radiogroup" aria-label="Care Type">
+                        <!-- Card 1 -->
+                        <label class="cursor-pointer relative group">
+                            <input type="radio" name="care-type" value="Skilled Nursing" class="care-card-radio sr-only" onchange="updateBroadcastText()">
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 h-full hover:border-emerald-300 transition-all relative">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-600 icon-circle rounded-full flex items-center justify-center text-xl mb-4">
+                                    <i class="fas fa-user-nurse"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-900 mb-1">Skilled Nursing</h3>
+                                <p class="text-xs text-slate-600">RN/LPN visits, wound care, injections.</p>
+                                <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                            </div>
+                        </label>
+                        <!-- Card 2 -->
+                        <label class="cursor-pointer relative group">
+                            <input type="radio" name="care-type" value="Physical Therapy" class="care-card-radio sr-only" onchange="updateBroadcastText()">
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 h-full hover:border-emerald-300 transition-all relative">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-600 icon-circle rounded-full flex items-center justify-center text-xl mb-4">
+                                    <i class="fas fa-walking"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-900 mb-1">Physical Therapy</h3>
+                                <p class="text-xs text-slate-600">Mobility training, rehab, exercises.</p>
+                                <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                            </div>
+                        </label>
+                        <!-- Card 3 -->
+                        <label class="cursor-pointer relative group">
+                            <input type="radio" name="care-type" value="Non-Medical Care" class="care-card-radio sr-only" onchange="updateBroadcastText()" checked>
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 h-full hover:border-emerald-300 transition-all relative">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-600 icon-circle rounded-full flex items-center justify-center text-xl mb-4">
+                                    <i class="fas fa-hands-helping"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-900 mb-1">Non-Medical Care</h3>
+                                <p class="text-xs text-slate-600">ADL assistance, bathing, meal prep.</p>
+                                <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                            </div>
+                        </label>
+                        <!-- Card 4 -->
+                        <label class="cursor-pointer relative group">
+                            <input type="radio" name="care-type" value="Companionship" class="care-card-radio sr-only" onchange="updateBroadcastText()">
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 h-full hover:border-emerald-300 transition-all relative">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-600 icon-circle rounded-full flex items-center justify-center text-xl mb-4">
+                                    <i class="fas fa-coffee"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-900 mb-1">Companionship</h3>
+                                <p class="text-xs text-slate-600">Social visits, supervision, safety.</p>
+                                <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                            </div>
+                        </label>
+                        <!-- Card 5 -->
+                        <label class="cursor-pointer relative group">
+                            <input type="radio" name="care-type" value="Transportation" class="care-card-radio sr-only" onchange="updateBroadcastText()">
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 h-full hover:border-emerald-300 transition-all relative">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-600 icon-circle rounded-full flex items-center justify-center text-xl mb-4">
+                                    <i class="fas fa-car"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-900 mb-1">Transportation</h3>
+                                <p class="text-xs text-slate-600">Rides to appointments, errands.</p>
+                                <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                            </div>
+                        </label>
+                         <!-- Card 6 -->
+                        <label class="cursor-pointer relative group">
+                            <input type="radio" name="care-type" value="Geriatric Care Mgmt" class="care-card-radio sr-only" onchange="updateBroadcastText()">
+                            <div class="bg-white border border-slate-200 rounded-xl p-6 h-full hover:border-emerald-300 transition-all relative">
+                                <div class="w-12 h-12 bg-slate-100 text-slate-600 icon-circle rounded-full flex items-center justify-center text-xl mb-4">
+                                    <i class="fas fa-clipboard-list"></i>
+                                </div>
+                                <h3 class="font-bold text-slate-900 mb-1">Care Management</h3>
+                                <p class="text-xs text-slate-600">Planning, coordination, assessments.</p>
+                                <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <label class="block text-sm font-bold text-slate-700 mb-3" for="req-date">When do you need this?</label>
+                        <div class="flex gap-4 max-w-md">
+                            <input type="date" id="req-date" class="border border-slate-300 rounded-lg px-4 py-3 w-full focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none" value="2026-02-10">
+                            <select id="req-duration" class="border border-slate-300 rounded-lg px-4 py-3 w-32 bg-white focus:ring-2 focus:ring-emerald-600 focus:border-emerald-600 outline-none">
+                                <option value="1 hr">1 hr</option>
+                                <option value="4 hrs" selected>4 hrs</option>
+                                <option value="8 hrs">8 hrs</option>
+                                <option value="12 hrs">12 hrs</option>
+                                <option value="24 hrs">24 hrs</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: PROVIDER SELECTION -->
+                <div id="step-2" class="step-panel">
+                    <h2 class="text-2xl font-bold text-slate-900 mb-2">Select Provider</h2>
+                    <p class="text-slate-600 mb-6">Broadcast to available agencies or pick a favorite caregiver.</p>
+
+                    <!-- Tabs -->
+                    <div class="flex gap-4 mb-6 border-b border-slate-200">
+                        <button onclick="switchWizTab('broadcast')" id="tab-broadcast" class="pb-3 px-2 text-sm font-bold tab-active border-b-2 transition-colors focus:outline-none focus:text-emerald-800">
+                            <i class="fas fa-bullhorn mr-2"></i>Smart Broadcast
+                        </button>
+                        <button onclick="switchWizTab('team')" id="tab-team" class="pb-3 px-2 text-sm font-bold tab-inactive border-b-2 hover:text-slate-800 transition-colors focus:outline-none focus:text-slate-900">
+                            <i class="fas fa-heart mr-2"></i>My Care Team
+                        </button>
+                    </div>
+
+                    <!-- Tab Content: Broadcast -->
+                    <div id="view-broadcast" class="fade-in">
+                        <label class="cursor-pointer block">
+                            <input type="radio" name="provider-choice" value="broadcast" class="sr-only" checked onchange="updateConfirmDetails()">
+                            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-6 flex items-start gap-4">
+                                <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-emerald-600 text-xl shadow-sm flex-shrink-0">
+                                    <i class="fas fa-satellite-dish"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-lg">Send to All Matching Providers</h3>
+                                    <p id="broadcast-desc" class="text-sm text-slate-700 mt-1 mb-3">
+                                        We will send this request to <strong>3 Agencies</strong> connected to your profile.
+                                    </p>
+                                    <div class="flex -space-x-2">
+                                        <div class="w-8 h-8 rounded-full bg-white border-2 border-emerald-50 flex items-center justify-center text-[10px] font-bold text-slate-500" title="Sunshine Care">SC</div>
+                                        <div class="w-8 h-8 rounded-full bg-white border-2 border-emerald-50 flex items-center justify-center text-[10px] font-bold text-slate-500" title="Elite Home">EH</div>
+                                        <div class="w-8 h-8 rounded-full bg-white border-2 border-emerald-50 flex items-center justify-center text-[10px] font-bold text-slate-500" title="Comfort Keepers">CK</div>
+                                    </div>
+                                </div>
+                                <div class="ml-auto">
+                                    <i class="fas fa-check-circle text-emerald-600 text-2xl"></i>
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Tab Content: Care Team (Favorites) -->
+                    <div id="view-team" class="hidden fade-in">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Caregiver 1 -->
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="provider-choice" value="Sarah Jenkins" class="care-card-radio sr-only" onchange="updateConfirmDetails()">
+                                <div class="border border-slate-200 rounded-xl p-4 hover:border-emerald-300 transition-all flex items-center gap-4 relative">
+                                    <div class="relative">
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+J&background=random" class="w-14 h-14 rounded-full object-cover border border-slate-100" alt="Sarah J">
+                                        <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
+                                            <i class="fas fa-heart text-rose-500 text-xs bg-rose-50 p-1 rounded-full"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-bold text-slate-900">Sarah Jenkins</h4>
+                                        <p class="text-xs text-slate-600">Elite Home Health</p>
+                                        <div class="text-xs text-slate-500 mt-1">12 Past Visits</div>
+                                    </div>
+                                    <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                                </div>
+                            </label>
+                            <!-- Caregiver 2 -->
+                            <label class="cursor-pointer relative">
+                                <input type="radio" name="provider-choice" value="Mike Ross" class="care-card-radio sr-only" onchange="updateConfirmDetails()">
+                                <div class="border border-slate-200 rounded-xl p-4 hover:border-emerald-300 transition-all flex items-center gap-4 relative">
+                                    <div class="relative">
+                                        <img src="https://ui-avatars.com/api/?name=Mike+R&background=random" class="w-14 h-14 rounded-full object-cover border border-slate-100" alt="Mike R">
+                                        <div class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5">
+                                            <i class="fas fa-heart text-rose-500 text-xs bg-rose-50 p-1 rounded-full"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-bold text-slate-900">Mike Ross</h4>
+                                        <p class="text-xs text-slate-600">Sunshine Care</p>
+                                        <div class="text-xs text-slate-500 mt-1">4 Past Visits</div>
+                                    </div>
+                                    <i class="fas fa-check-circle text-emerald-600 text-2xl absolute top-4 right-4 check-icon hidden"></i>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: CONFIRM -->
+                <div id="step-3" class="step-panel">
+                    <div class="text-center mb-8">
+                        <div class="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4 text-emerald-600 text-2xl">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <h2 class="text-2xl font-bold text-slate-900">Review & Send</h2>
+                        <p class="text-slate-600">Verify your request details.</p>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 rounded-xl overflow-hidden mb-6 shadow-sm">
+                        <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <span class="text-sm font-bold text-slate-600 uppercase tracking-wide">Recipient</span>
+                            <span id="conf-recipient" class="font-bold text-slate-900">Broadcasting to 3 Agencies</span>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <div class="flex justify-between border-b border-slate-100 pb-2">
+                                <span class="text-slate-600">Care Category</span>
+                                <span id="conf-type" class="font-medium text-slate-900">Non-Medical Care</span>
+                            </div>
+                            <div class="flex justify-between border-b border-slate-100 pb-2">
+                                <span class="text-slate-600">Date & Duration</span>
+                                <span id="conf-date" class="font-medium text-slate-900">Feb 10 • 4 hrs</span>
+                            </div>
+                            <div class="flex justify-between pt-2">
+                                <span class="text-slate-600">Estimated Cost</span>
+                                <span id="conf-cost" class="font-bold text-emerald-700">$120.00 - $160.00</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Wizard Footer -->
+            <div class="p-6 border-t border-slate-200 flex justify-between bg-white flex-shrink-0">
+                <button id="wiz-prev-btn" onclick="prevStep()" class="text-slate-500 font-bold px-6 py-2 rounded-lg hover:bg-slate-100 hover:text-slate-800 hidden focus:ring-2 focus:ring-slate-400">
+                    Back
+                </button>
+                <div class="ml-auto">
+                    <button id="wiz-next-btn" onclick="nextStep()" class="btn-primary font-bold py-3 px-8 rounded-lg shadow-lg transition-all flex items-center gap-2">
+                        Next Step <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- BRAND PROVIDER (LAYOUT) ---
+        const BrandProvider = {
+            renderLayout: (rootId) => {
+                const root = document.getElementById(rootId);
+                root.innerHTML = `
+                    <aside class="w-64 bg-slate-900 text-white flex flex-col flex-shrink-0 shadow-xl z-20 hidden md:flex">
+                        <div class="p-6 flex items-center gap-3 border-b border-slate-800">
+                            <svg class="w-8 h-8 text-emerald-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+                            <span class="font-semibold text-lg tracking-tight">FAHC Portal</span>
+                        </div>
+                        
+                        <!-- PRIMARY ACTION BUTTON -->
+                        <div class="p-4 pb-0">
+                            <button onclick="openWizard()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg flex items-center justify-center gap-2 transition-all transform hover:-translate-y-0.5 focus:ring-2 focus:ring-emerald-400 focus:outline-none">
+                                <i class="fas fa-plus-circle text-lg"></i>
+                                <span>Request Care</span>
+                            </button>
+                        </div>
+
+                        <nav class="flex-1 px-4 py-6 space-y-2">
+                            <button onclick="navTo('search')" id="nav-search" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all group">
+                                <i class="fas fa-search w-5 text-center group-hover:text-emerald-400"></i><span class="font-medium">Find Care</span>
+                            </button>
+                            <button onclick="navTo('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all group">
+                                <i class="fas fa-shield-alt w-5 text-center group-hover:text-emerald-400"></i><span class="font-medium">Permissions</span>
+                                <span id="perm-badge" class="ml-auto bg-slate-700 text-xs py-0.5 px-2 rounded-full hidden">0</span>
+                            </button>
+                            <div class="pt-4 pb-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Management</span></div>
+                            <button onclick="navTo('messages')" id="nav-messages" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all group">
+                                <i class="fas fa-comment-alt w-5 text-center group-hover:text-emerald-400"></i><span class="font-medium">Messages</span>
+                                <span id="msg-badge" class="ml-auto bg-emerald-600 text-xs py-0.5 px-2 rounded-full hidden">0</span>
+                            </button>
+                            <button onclick="navTo('calendar')" id="nav-calendar" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all group">
+                                <i class="fas fa-calendar-alt w-5 text-center group-hover:text-purple-400"></i><span class="font-medium">Schedule</span>
+                            </button>
+                            <button onclick="navTo('telehealth')" id="nav-telehealth" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all group">
+                                <i class="fas fa-video w-5 text-center group-hover:text-red-400"></i><span class="font-medium">Telehealth</span>
+                            </button>
+                            <div class="pt-4 pb-2"><span class="px-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Finance</span></div>
+                            <button onclick="navTo('budget')" id="nav-budget" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-all group">
+                                <i class="fas fa-wallet w-5 text-center group-hover:text-emerald-400"></i><span class="font-medium">Budget & Cost</span>
+                            </button>
+                        </nav>
+                        <div class="p-4 border-t border-slate-800">
+                            <div class="flex items-center gap-3 px-2">
+                                <div class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center text-slate-300 font-bold border-2 border-slate-600">JD</div>
+                                <div class="flex flex-col"><span class="text-sm font-medium text-white">Jane Doe</span><span class="text-xs text-slate-400">Referral User</span></div>
+                            </div>
+                        </div>
+                    </aside>
+                    <main class="flex-1 flex flex-col relative overflow-hidden">
+                        <header class="md:hidden bg-slate-900 text-white p-4 flex justify-between items-center shadow-md">
+                            <span class="font-bold flex items-center gap-2">FAHC</span>
+                            <div class="flex items-center gap-3">
+                                <button onclick="openWizard()" class="bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow flex items-center gap-1">
+                                    <i class="fas fa-plus"></i> Request
+                                </button>
+                                <button class="text-slate-300"><i class="fas fa-bars"></i></button>
+                            </div>
+                        </header>
+                        <div id="app-view" class="flex-1 overflow-y-auto p-6 md:p-8 scroll-smooth relative"></div>
+                    </main>
+                `;
+            }
+        };
+
+        // --- APP DATA ---
+        const providers = [
+            { id: 1, name: "Sunshine Senior Care", specialty: "Dementia & Memory", rating: 4.9, tags: ["24/7"], rate: 45, visitCost: 135 },
+            { id: 2, name: "Elite Home Health", specialty: "Post-Op Recovery", rating: 4.7, tags: ["PT"], rate: 55, visitCost: 165 },
+            { id: 3, name: "Comfort Keepers", specialty: "Companionship", rating: 4.8, tags: ["Errands"], rate: 35, visitCost: 105 },
+        ];
+
+        let state = {
+            consents: [
+                { providerId: 1, date: '2026-01-15', status: 'contacted' },
+                { providerId: 3, date: '2026-02-01', status: 'contacted' }
+            ], 
+            messages: {}, 
+            appointments: [
+                { id: 101, providerId: 1, date: '2026-01-20', type: 'In-Home', status: 'Confirmed', cost: 135 },
+                { id: 102, providerId: 1, date: '2026-01-27', type: 'In-Home', status: 'Confirmed', cost: 135 },
+                { id: 103, providerId: 3, date: '2026-02-03', type: 'In-Home', status: 'Confirmed', cost: 105 },
+                { id: 104, providerId: 1, date: '2026-02-10', type: 'Telehealth', status: 'Confirmed', cost: 45 },
+            ],
+            monthlyBudget: 1500,
+            telehealthActive: false
+        };
+        let currentModalProvider = null;
+        let wizStep = 1;
+
+        // --- WIZARD LOGIC ---
+        function openWizard() {
+            wizStep = 1;
+            updateWizUI();
+            updateBroadcastText();
+            document.getElementById('wizard-modal').classList.remove('hidden');
+        }
+
+        function closeWizard() {
+            document.getElementById('wizard-modal').classList.add('hidden');
+        }
+
+        function nextStep() {
+            if (wizStep < 3) {
+                wizStep++;
+                if(wizStep === 3) updateConfirmDetails();
+                updateWizUI();
+            } else {
+                closeWizard();
+                const type = document.querySelector('input[name="care-type"]:checked').value;
+                const provInputs = document.getElementsByName('provider-choice');
+                let prov = 'broadcast';
+                for(let i=0; i<provInputs.length; i++) { if(provInputs[i].checked) prov = provInputs[i].value; }
+                
+                state.appointments.push({ 
+                    id: Date.now(), 
+                    providerId: 1, // Dummy ID for logic
+                    date: document.getElementById('req-date').value, 
+                    type: type, 
+                    status: 'Pending', 
+                    cost: 0 
+                });
+                
+                const msg = prov === 'broadcast' ? `Broadcast sent for ${type}` : `Request sent to ${prov}`;
+                showToast(msg);
+                
+                if (document.getElementById('nav-calendar').classList.contains('bg-slate-800')) renderCalendar(document.getElementById('app-view'));
+            }
+        }
+
+        function prevStep() {
+            if (wizStep > 1) {
+                wizStep--;
+                updateWizUI();
+            }
+        }
+
+        function updateWizUI() {
+            document.querySelectorAll('.step-panel').forEach(el => el.classList.remove('active'));
+            document.getElementById(`step-${wizStep}`).classList.add('active');
+            document.getElementById('wiz-step-num').innerText = wizStep;
+
+            const nextBtn = document.getElementById('wiz-next-btn');
+            const prevBtn = document.getElementById('wiz-prev-btn');
+
+            if (wizStep === 1) {
+                prevBtn.classList.add('hidden');
+                nextBtn.innerHTML = `Next: Provider <i class="fas fa-arrow-right ml-2"></i>`;
+                nextBtn.className = "btn-primary font-bold py-3 px-8 rounded-lg shadow-lg transition-all flex items-center gap-2";
+            } else if (wizStep === 2) {
+                prevBtn.classList.remove('hidden');
+                nextBtn.innerHTML = `Review Request <i class="fas fa-arrow-right ml-2"></i>`;
+                nextBtn.className = "btn-primary font-bold py-3 px-8 rounded-lg shadow-lg transition-all flex items-center gap-2";
+            } else {
+                prevBtn.classList.remove('hidden');
+                nextBtn.innerHTML = `Send Request <i class="fas fa-paper-plane ml-2"></i>`;
+                nextBtn.className = "bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-all flex items-center gap-2";
+            }
+        }
+
+        function updateBroadcastText() {
+            const type = document.querySelector('input[name="care-type"]:checked').value;
+            let count = 3;
+            if(type === 'Physical Therapy') count = 2;
+            if(type === 'Geriatric Care Mgmt') count = 1;
+            const desc = document.getElementById('broadcast-desc');
+            if(desc) desc.innerHTML = `We will send this request to <strong>${count} ${type} Agencies</strong> connected to your profile.`;
+        }
+
+        function switchWizTab(tab) {
+            const bView = document.getElementById('view-broadcast');
+            const tView = document.getElementById('view-team');
+            const bTab = document.getElementById('tab-broadcast');
+            const tTab = document.getElementById('tab-team');
+
+            if (tab === 'broadcast') {
+                bView.classList.remove('hidden');
+                tView.classList.add('hidden');
+                bTab.className = "pb-3 px-2 text-sm font-bold tab-active border-b-2 transition-colors focus:outline-none";
+                tTab.className = "pb-3 px-2 text-sm font-bold tab-inactive border-b-2 hover:text-slate-800 transition-colors focus:outline-none";
+                document.querySelector('input[value="broadcast"]').checked = true;
+            } else {
+                bView.classList.add('hidden');
+                tView.classList.remove('hidden');
+                tTab.className = "pb-3 px-2 text-sm font-bold tab-active border-b-2 transition-colors focus:outline-none";
+                bTab.className = "pb-3 px-2 text-sm font-bold tab-inactive border-b-2 hover:text-slate-800 transition-colors focus:outline-none";
+            }
+        }
+
+        function updateConfirmDetails() {
+            const type = document.querySelector('input[name="care-type"]:checked').value;
+            const provInputs = document.getElementsByName('provider-choice');
+            let prov = 'broadcast';
+            for(let i=0; i<provInputs.length; i++) { if(provInputs[i].checked) prov = provInputs[i].value; }
+
+            const date = document.getElementById('req-date').value;
+            const dur = document.getElementById('req-duration').value;
+
+            document.getElementById('conf-type').innerText = type;
+            document.getElementById('conf-date').innerText = `${new Date(date).toLocaleDateString()} • ${dur}`;
+
+            const recEl = document.getElementById('conf-recipient');
+            if(prov === 'broadcast') {
+                recEl.innerHTML = `<i class="fas fa-satellite-dish text-emerald-600 mr-2"></i>Broadcasting to Network`;
+            } else {
+                recEl.innerHTML = `<i class="fas fa-heart text-rose-500 mr-2"></i>Specific: ${prov}`;
+            }
+
+            // Estimate cost
+            let base = 35;
+            if(type === 'Skilled Nursing') base = 85;
+            if(type === 'Physical Therapy') base = 120; 
+            const hours = parseInt(dur) || 1;
+            const low = base * hours;
+            const high = (base + 10) * hours;
+            document.getElementById('conf-cost').innerText = `$${low} - $${high} (Est)`;
+        }
+
+        // --- NAVIGATION ---
+        function navTo(view) {
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.remove('bg-slate-800', 'text-white');
+                el.classList.add('text-slate-300');
+            });
+            const activeNav = document.getElementById(`nav-${view}`);
+            if(activeNav) {
+                activeNav.classList.add('bg-slate-800', 'text-white');
+                activeNav.classList.remove('text-slate-300');
+            }
+
+            const appView = document.getElementById('app-view');
+            appView.innerHTML = ''; 
+
+            if (view === 'search') renderSearch(appView);
+            else if (view === 'dashboard') renderDashboard(appView);
+            else if (view === 'messages') renderMessagesList(appView);
+            else if (view === 'calendar') renderCalendar(appView);
+            else if (view === 'telehealth') renderTelehealth(appView);
+            else if (view === 'budget') renderBudget(appView);
+        }
+
+        // --- RENDER VIEWS ---
+        function renderBudget(container) {
+            const confirmedAppts = state.appointments.filter(a => a.status === 'Confirmed');
+            const totalSpent = confirmedAppts.reduce((sum, a) => sum + (a.cost || 0), 0);
+            const percentUsed = Math.min((totalSpent / state.monthlyBudget) * 100, 100);
+            const spendByProvider = {};
+            confirmedAppts.forEach(a => {
+                const pName = providers.find(p => p.id == a.providerId)?.name || 'Unknown';
+                if(!spendByProvider[pName]) spendByProvider[pName] = 0;
+                spendByProvider[pName] += a.cost;
+            });
+
+            container.innerHTML = `
+                <div class="mb-8 fade-in flex justify-between items-end">
+                    <div><h1 class="text-3xl font-bold text-slate-900">Budget & Expenses</h1><p class="text-slate-500 mt-2">Track care costs.</p></div>
+                    <div class="text-right"><span class="text-xs text-slate-400 uppercase font-bold">Monthly Limit</span><div class="text-2xl font-bold text-slate-700">$${state.monthlyBudget.toLocaleString()}</div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 fade-in">
+                    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="text-slate-500 font-medium text-sm mb-4">Total Spend</h3>
+                        <div class="text-4xl font-bold text-slate-800 mb-2">$${totalSpent.toLocaleString()}</div>
+                        <div class="w-full bg-slate-100 rounded-full h-2"><div class="bg-emerald-600 h-2 rounded-full" style="width: ${percentUsed}%"></div></div>
+                    </div>
+                     <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                        <h3 class="font-bold text-slate-800 mb-4">Spending by Provider</h3>
+                        <div class="chart-container"><canvas id="budgetChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-4">
+                     <h3 class="font-bold text-slate-800 mb-4">Transactions</h3>
+                      <div class="space-y-2">
+                            ${confirmedAppts.sort((a,b) => new Date(b.date) - new Date(a.date)).map(a => {
+                                const p = providers.find(p => p.id == a.providerId) || {name: 'Broadcast Pending'};
+                                return `<div class="flex justify-between items-center p-3 hover:bg-slate-50 rounded transition-colors"><div><div class="text-sm font-bold text-slate-800">${p.name}</div><div class="text-xs text-slate-400">${new Date(a.date).toLocaleDateString()} • ${a.type}</div></div><div class="font-bold text-slate-700">-$${a.cost}</div></div>`;
+                            }).join('')}
+                        </div>
+                </div>`;
+
+            setTimeout(() => {
+                const ctx = document.getElementById('budgetChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(spendByProvider),
+                        datasets: [{ data: Object.values(spendByProvider), backgroundColor: ['#059669', '#3b82f6', '#f59e0b', '#6366f1'], borderWidth: 0 }]
+                    },
+                    options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } } } }
+                });
+            }, 50);
+        }
+
+        function renderSearch(container) {
+            container.innerHTML = `<div class="mb-8 fade-in"><h1 class="text-3xl font-bold text-slate-900">Find Care Providers</h1><p class="text-slate-500 mt-2">Browse anonymously. Connect to view costs.</p></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 fade-in" id="provider-grid"></div>`;
+            const grid = document.getElementById('provider-grid');
+            providers.forEach(p => {
+                const isAuth = state.consents.find(c => c.providerId === p.id && c.status !== 'revoked');
+                const btn = isAuth ? `<button class="w-full mt-4 bg-slate-100 text-slate-500 font-bold py-2 rounded-lg cursor-default border border-slate-200"><i class="fas fa-check mr-2"></i>Connected</button>` : `<button onclick="openConsentModal(${p.id})" class="w-full mt-4 btn-primary font-bold py-2 rounded-lg shadow-sm">Connect</button>`;
+                grid.innerHTML += `<div class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:border-emerald-300 transition-colors flex flex-col"><div class="flex justify-between items-start mb-3"><div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 text-xl font-bold">${p.name.charAt(0)}</div><div class="flex items-center gap-1 text-amber-400 font-bold text-sm"><i class="fas fa-star"></i> ${p.rating}</div></div><h3 class="text-lg font-bold text-slate-800 mb-1">${p.name}</h3><p class="text-sm text-emerald-600 font-medium mb-1">${p.specialty}</p><p class="text-xs text-slate-500 mb-3">Est. $${p.visitCost}/visit</p><div class="flex flex-wrap gap-2 mt-auto">${p.tags.map(t => `<span class="text-[10px] bg-slate-50 text-slate-600 px-2 py-1 rounded border border-slate-100 uppercase">${t}</span>`).join('')}</div>${btn}</div>`;
+            });
+        }
+
+        function renderDashboard(c) {
+            c.innerHTML = `<h1 class="text-3xl font-bold text-slate-900 mb-6">Permissions</h1><div class="space-y-4 fade-in" id="perm-list"></div>`;
+            if(state.consents.length===0) return;
+            state.consents.forEach(item => {
+                if(item.status==='revoked') return;
+                const p = providers.find(x=>x.id===item.providerId);
+                document.getElementById('perm-list').innerHTML += `<div class="bg-white border border-slate-200 rounded-xl p-5 flex justify-between items-center"><div class="flex items-center gap-4"><div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500">${p.name.charAt(0)}</div><div><h3 class="font-bold text-slate-800">${p.name}</h3><div class="text-xs text-slate-500">$${p.visitCost}/visit approx</div></div></div><button onclick="revokeConsent(${p.id})" class="text-xs text-rose-600 border border-rose-200 px-3 py-1 rounded hover:bg-rose-50">Revoke</button></div>`;
+            });
+        }
+        function renderMessagesList(c) { c.innerHTML = `<h1 class="text-3xl font-bold text-slate-900 mb-4">Messages</h1><div class="bg-white rounded-xl border border-slate-200 h-96 flex items-center justify-center text-slate-400">Message center (Use Simulation)</div>`; }
+        
+        function renderCalendar(container) {
+            container.innerHTML = `<div class="flex justify-between items-center mb-8 fade-in"><div><h1 class="text-3xl font-bold text-slate-900">Schedule</h1></div></div><div class="grid grid-cols-1 gap-4" id="appt-list"></div>`;
+            const list = document.getElementById('appt-list');
+            if(state.appointments.length === 0) { list.innerHTML = `<p class="text-slate-400">No appointments.</p>`; return; }
+            state.appointments.sort((a,b)=>new Date(a.date)-new Date(b.date)).forEach(a => {
+                const p = providers.find(x=>x.id==a.providerId) || {name: "Pending Broadcast"};
+                const color = a.status === 'Confirmed' ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-amber-500 opacity-70';
+                list.innerHTML += `<div class="bg-white p-4 rounded shadow-sm border border-slate-200 ${color} flex justify-between items-center"><div><div class="font-bold text-slate-800">${p.name}</div><div class="text-xs text-slate-500">${new Date(a.date).toLocaleDateString()} • ${a.type}</div></div><div class="text-right"><div class="font-bold text-slate-700">$${a.cost || 0}</div><div class="text-[10px] uppercase font-bold text-slate-400">${a.status}</div></div></div>`;
+            });
+        }
+
+        function renderTelehealth(c) {
+             c.innerHTML = `<div class="mb-8 fade-in"><h1 class="text-3xl font-bold text-slate-900">Telehealth</h1></div><div class="bg-slate-900 rounded-2xl aspect-video relative flex items-center justify-center text-slate-400 flex-col gap-4 shadow-xl">${state.telehealthActive ? '<div class="text-emerald-400 animate-pulse text-2xl font-bold">● Live Connection Active</div>' : '<i class="fas fa-video-slash text-4xl"></i><p>Waiting for provider...</p>'}</div>`;
+        }
+
+        // --- ACTIONS ---
+        function openConsentModal(id) {
+            currentModalProvider = providers.find(p => p.id === id);
+            document.getElementById('modal-provider-name').innerText = currentModalProvider.name;
+            document.getElementById('modal-provider-rate').innerText = `$${currentModalProvider.rate}/hr • Est. Visit $${currentModalProvider.visitCost}`;
+            document.getElementById('consent-check').checked = false;
+            document.getElementById('btn-confirm-consent').disabled = true;
+            document.getElementById('btn-confirm-consent').className = "px-6 py-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm cursor-not-allowed";
+            document.getElementById('consent-modal').classList.remove('hidden');
+        }
+        function toggleConsentBtn() {
+            const chk = document.getElementById('consent-check');
+            const btn = document.getElementById('btn-confirm-consent');
+            if(chk.checked) { btn.disabled=false; btn.className="px-6 py-2 btn-primary font-bold text-sm shadow-sm transition-colors rounded-lg"; }
+            else { btn.disabled=true; btn.className="px-6 py-2 bg-slate-300 text-slate-500 rounded-lg font-bold text-sm cursor-not-allowed"; }
+        }
+        function confirmConsent() {
+            state.consents.push({providerId: currentModalProvider.id, date: new Date(), status: 'active'});
+            closeModal('consent-modal');
+            showToast(`Connected. Cost data unlocked.`);
+            updateBadges();
+            navTo('search');
+        }
+        function revokeConsent(pid) {
+            const c = state.consents.find(x => x.providerId === pid);
+            if(c && confirm("Block this provider?")) { c.status = 'revoked'; navTo('dashboard'); }
+        }
+
+        // --- SIMULATION ---
+        function simConfirmAppointment() {
+            const pending = state.appointments.find(a => a.status === 'Pending');
+            if(!pending) return alert("Request a visit first.");
+            const p = providers.find(x => x.id == pending.providerId) || providers[0];
+            pending.status = 'Confirmed';
+            let cost = 120;
+            if(pending.type === 'Skilled Nursing') cost = 250;
+            if(pending.type === 'Companionship') cost = 80;
+            pending.cost = cost; 
+            showToast(`Visit Confirmed. $${pending.cost} added to budget.`);
+            const budgetNav = document.getElementById('nav-budget');
+            if (budgetNav.classList.contains('bg-slate-800')) renderBudget(document.getElementById('app-view'));
+            else if(document.getElementById('nav-calendar').classList.contains('bg-slate-800')) renderCalendar(document.getElementById('app-view'));
+        }
+        function simProviderReply() { showToast("Provider replied (Chat unlocked)"); }
+        function simStartTelehealth() { state.telehealthActive=true; navTo('telehealth'); }
+
+        // --- UTILS ---
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+        function showToast(msg) {
+            const t = document.createElement('div');
+            t.className = "fixed top-6 left-1/2 -translate-x-1/2 bg-slate-800 text-white px-6 py-3 rounded-full shadow-2xl text-sm font-bold z-[60] fade-in";
+            t.innerText = msg;
+            document.body.appendChild(t);
+            setTimeout(()=>t.remove(), 3000);
+        }
+        function updateBadges() {
+            const p = state.consents.filter(c=>c.status!=='revoked').length;
+            if(p>0) { document.getElementById('perm-badge').innerText=p; document.getElementById('perm-badge').classList.remove('hidden'); }
+        }
+        function toggleDevPanel() { 
+            document.getElementById('dev-panel-content').classList.toggle('hidden'); 
+            document.getElementById('dev-toggle-icon').classList.toggle('fa-chevron-up');
+            document.getElementById('dev-toggle-icon').classList.toggle('fa-chevron-down');
+        }
+        function resetApp() { location.reload(); }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            BrandProvider.renderLayout('root');
+            navTo('search');
+            updateBadges();
+            document.getElementById('req-date').value = new Date(Date.now()+86400000).toISOString().split('T')[0];
+        });
+
+    </script>
+</body>
+</html>
