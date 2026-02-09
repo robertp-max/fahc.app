@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Find A Home Care | Provider Platform</title>
+    
+    <!-- Brand Font: Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Brand Icons: Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            navy: '#1B263B',     /* Midnight Navy */
+                            garnet: '#7B241C',   /* Deep Garnet */
+                            gold: '#C5A059',     /* Golden Sand */
+                            cream: '#F5F5F0',    /* Cloud Cream */
+                            white: '#FFFFFF',
+                            gray: {
+                                100: '#F3F4F6',
+                                300: '#D1D5DB',
+                                800: '#1F2937',
+                            }
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Roboto', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- BRAND TOKENS --- */
+        :root {
+            --brand-navy: #1B263B;
+            --brand-garnet: #7B241C;
+            --brand-gold: #C5A059;
+            --brand-cream: #F5F5F0;
+            --radius-sf: 4px; /* Salesforce standard border radius */
+        }
+
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: #F8F9FA; 
+            color: var(--brand-navy);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Salesforce Style Navigation */
+        .nav-item { 
+            transition: all 0.2s ease; 
+            border-left: 4px solid transparent;
+            color: #444;
+        }
+        .nav-item:hover {
+            background-color: var(--brand-cream);
+            color: var(--brand-navy);
+        }
+        .nav-item.active {
+            background-color: var(--brand-cream); 
+            color: var(--brand-navy);
+            border-left-color: var(--brand-gold);
+            font-weight: 700;
+        }
+
+        /* Action Buttons */
+        .btn-brand {
+            background-color: var(--brand-navy);
+            color: #ffffff;
+            font-weight: 500;
+            border-radius: var(--radius-sf);
+            transition: opacity 0.2s;
+        }
+        .btn-brand:hover { opacity: 0.9; }
+
+        .btn-accent {
+            background-color: var(--brand-gold);
+            color: var(--brand-navy);
+            font-weight: 700;
+            border-radius: var(--radius-sf);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* CRM Specific UI */
+        .sf-header {
+            background-color: var(--brand-cream);
+            color: var(--brand-navy);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 2px solid #DDD;
+        }
+        .sf-row {
+            border-bottom: 1px solid #EEE;
+            cursor: pointer;
+            transition: background-color 0.1s;
+        }
+        .sf-row:hover { background-color: #fdfdfd; }
+        .sf-cell { padding: 14px 16px; font-size: 0.9rem; font-weight: 300; }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .badge-gold { background: #FFFBEB; color: #92400E; border: 1px solid var(--brand-gold); }
+        .badge-garnet { background: #FEF2F2; color: var(--brand-garnet); border: 1px solid #FECACA; }
+        .badge-navy { background: #E0F2FE; color: var(--brand-navy); border: 1px solid #BAE6FD; }
+
+        /* Animation */
+        .view-fade { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #CCC; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--brand-gold); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden text-sm">
+
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-white border-r border-gray-300 flex flex-col z-30 flex-shrink-0 shadow-sm">
+        <!-- Brand Logo Area -->
+        <div class="h-20 flex items-center px-6 border-b-4 border-brand-gold bg-brand-navy">
+            <div class="flex items-center gap-3">
+                <!-- SVG Icon from Brand Image -->
+                <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M35 20C35 28.2843 28.2843 35 20 35C11.7157 35 5 28.2843 5 20C5 11.7157 11.7157 5 20 5" stroke="#C5A059" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="20" cy="20" r="8" stroke="#FFFFFF" stroke-width="2"/>
+                    <circle cx="28" cy="28" r="3" fill="#C5A059"/> 
+                </svg>
+                <div>
+                    <h1 class="font-black text-xl leading-none text-white tracking-tighter">FAHC</h1>
+                    <span class="text-[9px] font-light text-brand-gold uppercase tracking-[2px]">Provider Portal</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Primary Nav -->
+        <nav class="flex-1 py-6 overflow-y-auto space-y-1">
+            <div class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">Workspace</div>
+            <button onclick="navigateTo('dashboard')" id="nav-dashboard" class="nav-item active w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-house-user text-lg w-5"></i> Dashboard
+            </button>
+            <button onclick="navigateTo('compliance')" id="nav-compliance" class="nav-item w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-shield-check text-lg w-5"></i> Compliance
+            </button>
+            <button onclick="navigateTo('revenue')" id="nav-revenue" class="nav-item w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-file-invoice-dollar text-lg w-5"></i> Revenue Reports
+            </button>
+
+            <div class="px-6 text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 mt-8">Salesforce CRM</div>
+            <button onclick="navigateTo('crm-leads')" id="nav-crm-leads" class="nav-item w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-star text-brand-gold w-5"></i> Leads
+            </button>
+            <button onclick="navigateTo('crm-opps')" id="nav-crm-opps" class="nav-item w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-trophy text-brand-garnet w-5"></i> Opportunities
+            </button>
+            <button onclick="navigateTo('crm-contacts')" id="nav-crm-contacts" class="nav-item w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-user-group text-brand-navy w-5"></i> Contacts
+            </button>
+            <button onclick="navigateTo('crm-accounts')" id="nav-crm-accounts" class="nav-item w-full text-left px-6 py-3 flex items-center gap-3">
+                <i class="fa-solid fa-building-user text-gray-500 w-5"></i> Accounts
+            </button>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-gray-200 bg-brand-cream">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded bg-brand-navy text-white flex items-center justify-center font-bold text-xs">MV</div>
+                <div class="overflow-hidden">
+                    <p class="font-bold text-brand-navy text-xs truncate">Margaret V.</p>
+                    <p class="text-[10px] text-gray-500 truncate italic">Sunnyvale Admin</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN APP AREA -->
+    <main class="flex-1 overflow-y-auto relative bg-[#F8F9FA]" id="main-content">
+        
+        <!-- App Header Toolbar -->
+        <header class="h-16 bg-white border-b border-gray-300 sticky top-0 z-20 px-8 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-4">
+                <div id="header-icon" class="w-8 h-8 rounded bg-brand-gold hidden items-center justify-center text-white shadow-sm">
+                    <i id="header-icon-i" class="fa-solid fa-star"></i>
+                </div>
+                <div>
+                    <span id="header-subtitle" class="text-[10px] text-gray-400 uppercase tracking-widest font-black">Portal</span>
+                    <h2 id="page-title" class="text-xl font-black text-brand-navy tracking-tight">Dashboard</h2>
+                </div>
+            </div>
+            <div class="flex items-center gap-4">
+                <button class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 text-brand-navy transition relative">
+                    <i class="fa-regular fa-bell text-xl"></i>
+                    <span class="absolute top-2 right-2 w-2 h-2 bg-brand-garnet rounded-full border border-white"></span>
+                </button>
+                <button class="btn-accent px-5 py-2 text-[11px] shadow-lg flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> New Action
+                </button>
+            </div>
+        </header>
+
+        <!-- VIEW: DASHBOARD (Home) -->
+        <section id="view-dashboard" class="p-8 max-w-7xl mx-auto view-fade">
+            <!-- Action Center: Brand Garnet for Critical -->
+            <div class="bg-white border-l-8 border-brand-garnet rounded-lg p-5 mb-10 flex items-center justify-between shadow-md">
+                <div class="flex items-center gap-5">
+                    <div class="text-brand-garnet text-3xl"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div>
+                        <h3 class="text-lg font-bold text-brand-navy">Compliance Warning</h3>
+                        <p class="text-sm text-gray-600 mt-1 font-light">Your state licensure expires in <strong>3 days</strong>. Upload renewal docs to prevent referral hold.</p>
+                    </div>
+                </div>
+                <button onclick="navigateTo('compliance')" class="btn-brand px-6 py-2 text-xs bg-brand-garnet border border-brand-garnet hover:bg-white hover:text-brand-garnet transition-all uppercase font-black">Resolve Now</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+                <div class="bg-white p-6 rounded-lg border border-gray-300 shadow-sm border-t-4 border-t-brand-gold">
+                    <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Pipeline (Open Opps)</div>
+                    <div class="text-3xl font-black text-brand-navy">$24,500</div>
+                    <div class="text-xs text-green-600 mt-2 font-bold flex items-center gap-1"><i class="fa-solid fa-caret-up"></i> 14% vs. target</div>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-300 shadow-sm border-t-4 border-t-brand-navy cursor-pointer hover:bg-brand-cream transition" onclick="navigateTo('crm-leads')">
+                    <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">New Leads</div>
+                    <div class="text-3xl font-black text-brand-navy">3</div>
+                    <div class="text-[10px] text-brand-gold font-black mt-2 uppercase tracking-tighter">Requires 1st Contact</div>
+                </div>
+                <div class="bg-white p-6 rounded-lg border border-gray-300 shadow-sm border-t-4 border-t-gray-400">
+                    <div class="text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Active Census</div>
+                    <div class="text-3xl font-black text-brand-navy">14</div>
+                    <div class="text-xs text-gray-500 mt-2 font-light">Admitted Patients</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: COMPLIANCE -->
+        <section id="view-compliance" class="p-8 max-w-5xl mx-auto hidden view-fade">
+            <div class="bg-white rounded-lg border border-gray-300 overflow-hidden shadow-md">
+                <div class="p-6 border-b border-gray-200 bg-brand-cream flex justify-between items-center">
+                    <h3 class="text-xl font-black tracking-tight">Compliance Assistant</h3>
+                    <span class="text-xs font-bold text-brand-garnet px-3 py-1 bg-white rounded border border-brand-garnet">Status: At Risk</span>
+                </div>
+                <div class="p-8 space-y-6">
+                    <div class="flex items-center justify-between p-5 bg-red-50 border border-red-200 rounded">
+                        <div class="flex items-center gap-5">
+                            <div class="w-12 h-12 rounded-full bg-white text-brand-garnet flex items-center justify-center shadow-sm"><i class="fa-solid fa-file-circle-exclamation text-2xl"></i></div>
+                            <div>
+                                <h4 class="font-bold text-lg">Business License Renewal</h4>
+                                <p class="text-sm text-brand-garnet font-bold">Expires: Feb 10, 2026</p>
+                            </div>
+                        </div>
+                        <button class="btn-accent px-6 py-2 text-xs">Upload File</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: CRM LEADS -->
+        <section id="view-crm-leads" class="p-8 max-w-7xl mx-auto hidden view-fade">
+            <div class="bg-white rounded border border-gray-300 shadow-sm overflow-hidden">
+                <div class="p-4 border-b border-gray-300 bg-brand-cream flex justify-between items-center">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-solid fa-filter text-brand-navy"></i>
+                        <span class="font-black text-brand-navy text-sm uppercase tracking-widest">Open Referrals (Leads)</span>
+                    </div>
+                </div>
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="sf-header">Name</th>
+                            <th class="sf-header">Referral Source</th>
+                            <th class="sf-header">Status</th>
+                            <th class="sf-header">Created</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        <tr class="sf-row" onclick="openDrawer('Sarah Jenkins', 'Lead', 'Web Inquiry', 'New')">
+                            <td class="sf-cell font-bold text-brand-navy hover:underline">Sarah Jenkins</td>
+                            <td class="sf-cell font-light">FAHC Web Inquiry</td>
+                            <td class="sf-cell"><span class="badge badge-gold">New</span></td>
+                            <td class="sf-cell text-xs font-mono text-gray-400">2 hrs ago</td>
+                        </tr>
+                        <tr class="sf-row" onclick="openDrawer('Robert Vance', 'Lead', 'Dr. Smith', 'Working')">
+                            <td class="sf-cell font-bold text-brand-navy hover:underline">Robert Vance</td>
+                            <td class="sf-cell font-light">Referral: Dr. Smith</td>
+                            <td class="sf-cell"><span class="badge badge-navy">Working</span></td>
+                            <td class="sf-cell text-xs font-mono text-gray-400">Yesterday</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- VIEW: CRM OPPORTUNITIES (Kanban) -->
+        <section id="view-crm-opps" class="p-6 h-full flex-col hidden view-fade">
+            <div class="flex-1 overflow-x-auto flex gap-6 pb-4">
+                <!-- Kanban Column -->
+                <div class="w-80 flex-shrink-0 flex flex-col bg-gray-200/50 rounded-lg p-3 border border-gray-300">
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <span class="text-xs font-black text-gray-500 uppercase tracking-[2px]">Assessment (2)</span>
+                    </div>
+                    <div class="space-y-3 overflow-y-auto px-1">
+                        <div class="bg-white p-4 rounded shadow-sm border-l-4 border-l-brand-gold cursor-pointer hover:shadow-lg transition" onclick="openDrawer('Maria Rodriguez', 'Opportunity', 'Sunnyvale Hospital', 'Assessment')">
+                            <h4 class="font-bold text-brand-navy text-sm">Maria Rodriguez</h4>
+                            <p class="text-[10px] text-gray-500 mt-1 uppercase font-black">Sunnyvale Hospital</p>
+                            <div class="mt-4 flex justify-between items-center">
+                                <span class="text-xs font-black text-brand-gold">$3,200</span>
+                                <button class="p-2 bg-brand-navy text-white rounded-full text-[10px]" title="Launch Video Meet">
+                                    <i class="fa-solid fa-video"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Kanban Column -->
+                <div class="w-80 flex-shrink-0 flex flex-col bg-gray-200/50 rounded-lg p-3 border border-gray-300">
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <span class="text-xs font-black text-gray-500 uppercase tracking-[2px]">Closing (1)</span>
+                    </div>
+                    <div class="space-y-3 overflow-y-auto px-1">
+                         <div class="bg-white p-4 rounded shadow-sm border-l-4 border-l-brand-navy cursor-pointer" onclick="openDrawer('Emily Chen', 'Opportunity', 'Self-Referral', 'Proposal Sent')">
+                            <h4 class="font-bold text-brand-navy text-sm">Emily Chen</h4>
+                            <p class="text-[10px] text-gray-400 mt-1 uppercase font-black italic">Proposal Sent</p>
+                            <div class="mt-4 flex justify-between items-center">
+                                <span class="text-xs font-black text-brand-navy">$8,400</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: CRM CONTACTS -->
+        <section id="view-crm-contacts" class="p-8 max-w-7xl mx-auto hidden view-fade">
+             <div class="bg-white rounded border border-gray-300 shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="sf-header">Full Name</th>
+                            <th class="sf-header">Account</th>
+                            <th class="sf-header">Role</th>
+                            <th class="sf-header">Last Contact</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        <tr class="sf-row" onclick="openDrawer('Walter White', 'Contact', 'White Household', 'Patient')">
+                            <td class="sf-cell font-bold">Walter White</td>
+                            <td class="sf-cell text-brand-navy font-black text-xs underline">White Household</td>
+                            <td class="sf-cell"><span class="badge badge-gold">Patient</span></td>
+                            <td class="sf-cell text-xs text-gray-400">Feb 1, 2026</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- VIEW: CRM ACCOUNTS -->
+        <section id="view-crm-accounts" class="p-8 max-w-7xl mx-auto hidden view-fade">
+             <div class="bg-white rounded border border-gray-300 shadow-sm overflow-hidden">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr>
+                            <th class="sf-header">Account Name</th>
+                            <th class="sf-header">Type</th>
+                            <th class="sf-header">Primary Contact</th>
+                            <th class="sf-header">Referrals YTD</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white">
+                        <tr class="sf-row" onclick="openDrawer('Good Samaritan', 'Account', 'Institution', 'Referral Source')">
+                            <td class="sf-cell font-black text-brand-navy">Good Samaritan Hospital</td>
+                            <td class="sf-cell">Medical Institution</td>
+                            <td class="sf-cell">Dr. Derek S.</td>
+                            <td class="sf-cell font-black">24</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- RECORD DRAWER (Salesforce Style) -->
+    <div id="drawer" class="fixed inset-y-0 right-0 w-[500px] bg-white shadow-2xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 flex flex-col border-l border-gray-300">
+        <!-- Compact Layout Header -->
+        <div class="p-6 border-b border-gray-300 bg-brand-cream">
+            <div class="flex justify-between items-start">
+                <div class="flex gap-4">
+                    <div id="drawer-icon" class="w-12 h-12 rounded bg-brand-gold text-brand-navy flex items-center justify-center text-xl shadow-sm">
+                        <i id="drawer-icon-i" class="fa-solid fa-star"></i>
+                    </div>
+                    <div>
+                        <p id="drawer-subtitle" class="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-1">Lead</p>
+                        <h3 id="drawer-title" class="font-black text-brand-navy text-2xl tracking-tight">Sarah Jenkins</h3>
+                    </div>
+                </div>
+                <button onclick="closeDrawer()" class="text-gray-400 hover:text-brand-garnet transition"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            
+            <div class="grid grid-cols-3 gap-6 mt-8">
+                <div>
+                    <p class="text-[9px] text-gray-400 uppercase font-black">Status</p>
+                    <p id="drawer-status" class="text-sm font-bold text-brand-navy">New Referral</p>
+                </div>
+                <div>
+                    <p class="text-[9px] text-gray-400 uppercase font-black">Source</p>
+                    <p id="drawer-source" class="text-sm font-bold text-brand-navy">Web</p>
+                </div>
+                <div>
+                    <p class="text-[9px] text-gray-400 uppercase font-black">Next Step</p>
+                    <p class="text-sm font-black text-brand-gold underline">Schedule Assessment</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Activity Feed / Composer -->
+        <div class="flex border-b border-gray-300">
+            <button class="flex-1 py-4 text-xs font-black uppercase tracking-widest border-b-4 border-brand-gold text-brand-navy">Activity</button>
+            <button class="flex-1 py-4 text-xs font-black uppercase tracking-widest text-gray-400 hover:text-brand-navy">Details</button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 bg-[#F9F9F9]">
+            <div class="bg-white border border-gray-300 rounded p-4 mb-8 shadow-sm">
+                <div class="flex gap-4 border-b border-gray-100 pb-3 mb-3">
+                    <button class="text-[10px] font-black uppercase tracking-tighter text-brand-gold"><i class="fa-solid fa-pen mr-1"></i> Log Call</button>
+                    <button class="text-[10px] font-black uppercase tracking-tighter text-gray-400"><i class="fa-solid fa-envelope mr-1"></i> Email</button>
+                </div>
+                <textarea class="w-full text-xs border-0 focus:ring-0 resize-none p-0 bg-transparent placeholder-gray-300" placeholder="Note down outcome..." rows="3"></textarea>
+                <div class="flex justify-end mt-2">
+                    <button class="btn-brand px-5 py-1.5 text-[10px] font-black uppercase">Post Activity</button>
+                </div>
+            </div>
+            
+            <div class="space-y-6">
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-brand-gold flex-shrink-0 flex items-center justify-center text-brand-navy text-[10px]"><i class="fa-solid fa-phone"></i></div>
+                    <div>
+                        <p class="text-[10px] font-black text-brand-navy">Today • Phone Call</p>
+                        <p class="text-xs text-gray-600 font-light mt-1">Left voicemail for family representative. Attempted to schedule video assessment for Thursday.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI OVERLAY -->
+    <div id="overlay" onclick="closeDrawer()" class="fixed inset-0 bg-brand-navy/60 backdrop-blur-sm z-40 hidden transition-opacity"></div>
+
+    <script>
+        // --- Navigation Controller ---
+        function navigateTo(viewId) {
+            // Hide all views
+            document.querySelectorAll('main > section').forEach(el => el.classList.add('hidden'));
+            
+            // Map sub-views to their specific IDs
+            const target = document.getElementById('view-' + viewId);
+            if(target) target.classList.remove('hidden');
+
+            // Update Navbar state
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            const activeNav = document.getElementById('nav-' + viewId);
+            if(activeNav) activeNav.classList.add('active');
+
+            // Update Dynamic Header
+            const titles = { 
+                'dashboard': 'Dashboard', 'compliance': 'Compliance Center', 'revenue': 'Revenue Wizard',
+                'crm-leads': 'Leads Pipeline', 'crm-opps': 'Pipeline: Opportunities', 
+                'crm-contacts': 'Contact Registry', 'crm-accounts': 'Institutional Accounts'
+            };
+            const iconMap = {
+                'crm-leads': 'fa-solid fa-star', 'crm-opps': 'fa-solid fa-trophy',
+                'crm-contacts': 'fa-solid fa-user-group', 'crm-accounts': 'fa-solid fa-building-user'
+            };
+            const bgMap = {
+                'crm-leads': 'bg-brand-gold', 'crm-opps': 'bg-brand-garnet',
+                'crm-contacts': 'bg-brand-navy', 'crm-accounts': 'bg-gray-500'
+            };
+
+            document.getElementById('page-title').innerText = titles[viewId] || 'Portal';
+            
+            const headerIcon = document.getElementById('header-icon');
+            if(viewId.startsWith('crm')) {
+                headerIcon.className = `w-8 h-8 rounded flex items-center justify-center text-white shadow-sm ${bgMap[viewId]}`;
+                document.getElementById('header-icon-i').className = iconMap[viewId];
+                headerIcon.classList.remove('hidden');
+                document.getElementById('header-subtitle').innerText = 'Salesforce CRM';
+            } else {
+                headerIcon.classList.add('hidden');
+                document.getElementById('header-subtitle').innerText = 'Provider Portal';
+            }
+
+            document.getElementById('main-content').scrollTop = 0;
+        }
+
+        // --- Slide-out Controller ---
+        function openDrawer(title, type, source, status) {
+            document.getElementById('drawer-title').innerText = title;
+            document.getElementById('drawer-subtitle').innerText = type;
+            document.getElementById('drawer-source').innerText = source;
+            document.getElementById('drawer-status').innerText = status;
+
+            const iconBox = document.getElementById('drawer-icon');
+            const iconI = document.getElementById('drawer-icon-i');
+            iconBox.className = 'w-12 h-12 rounded flex items-center justify-center text-xl shadow-sm';
+            
+            if(type === 'Lead') { iconBox.classList.add('bg-brand-gold'); iconI.className = 'fa-solid fa-star'; }
+            else if(type === 'Opportunity') { iconBox.classList.add('bg-brand-garnet', 'text-white'); iconI.className = 'fa-solid fa-trophy'; }
+            else if(type === 'Contact') { iconBox.classList.add('bg-brand-navy', 'text-white'); iconI.className = 'fa-solid fa-user-group'; }
+            else if(type === 'Account') { iconBox.classList.add('bg-gray-500', 'text-white'); iconI.className = 'fa-solid fa-building-user'; }
+
+            document.getElementById('drawer').classList.remove('translate-x-full');
+            document.getElementById('overlay').classList.remove('hidden');
+        }
+
+        function closeDrawer() {
+            document.getElementById('drawer').classList.add('translate-x-full');
+            document.getElementById('overlay').classList.add('hidden');
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            navigateTo('dashboard');
+        });
+    </script>
+</body>
+</html>

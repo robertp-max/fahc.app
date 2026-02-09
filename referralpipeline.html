@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindAHomeCare | Agency Operations Hub</title>
+    
+    <!-- 
+        BRANDING: "Navy / Garnet / Gold / Cream"
+        Typography: Roboto
+    -->
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Roboto Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Roboto', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            navy: '#1B263B',
+                            garnet: '#7B241C',
+                            gold: '#C5A059',
+                            cream: '#F5F5F0',
+                            white: '#FFFFFF',
+                        }
+                    },
+                    borderRadius: { 'sm': '4px', 'md': '8px', 'lg': '16px' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body { background-color: #F5F5F0; color: #1B263B; font-family: 'Roboto', sans-serif; }
+        
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 10px 20px; border-radius: 4px; font-weight: 500;
+            font-size: 13px; transition: all 0.2s ease; cursor: pointer;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+        .btn-gold { background-color: #C5A059; color: #1B263B; }
+        .btn-gold:hover { background-color: #bfa040; transform: translateY(-1px); }
+        .btn-navy { background-color: #1B263B; color: #FFFFFF; }
+        .btn-garnet { background-color: #7B241C; color: #FFFFFF; }
+        .btn-outline { border: 2px solid #1B263B; color: #1B263B; }
+        .btn-outline:hover { background-color: #1B263B; color: white; }
+
+        .scroller::-webkit-scrollbar { width: 6px; }
+        .scroller::-webkit-scrollbar-thumb { background-color: #C5A059; border-radius: 4px; }
+        
+        .nav-item { transition: all 0.2s ease; border-left: 4px solid transparent; color: rgba(255,255,255,0.6); }
+        .nav-active { background-color: rgba(197, 160, 89, 0.1); color: #FFFFFF; border-left-color: #C5A059; }
+        .nav-item:hover:not(.nav-active) { color: #FFFFFF; background-color: rgba(255, 255, 255, 0.05); }
+
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background-color: #D1D5DB; }
+        .calendar-day { background-color: white; min-height: 100px; padding: 8px; }
+        .event { font-size: 10px; padding: 2px 4px; border-radius: 2px; margin-bottom: 2px; font-weight: bold; }
+        .event-visit { background-color: #e0f2fe; color: #0369a1; border-left: 3px solid #0ea5e9; }
+        .event-tele { background-color: #f0fdf4; color: #15803d; border-left: 3px solid #22c55e; }
+        .event-follow { background-color: #fff7ed; color: #c2410c; border-left: 3px solid #f97316; }
+
+        .modal-backdrop { background-color: rgba(27, 38, 59, 0.9); backdrop-filter: blur(4px); z-index: 50; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-64 bg-brand-navy text-white flex flex-col flex-shrink-0 z-30 shadow-2xl">
+        <div class="h-20 flex items-center px-6 border-b border-white/10">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-shield-heart text-brand-gold text-2xl"></i>
+                <div>
+                    <h1 class="font-black text-xl leading-none tracking-tight">FAHC Portal</h1>
+                    <p class="text-[10px] text-brand-gold uppercase font-bold tracking-widest mt-1">Operational Hub</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="flex-1 py-6 space-y-1 px-2">
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Agency Operations</p>
+            
+            <button onclick="router('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center px-4 py-3 group nav-active">
+                <i class="fa-solid fa-tower-observation w-6 text-center"></i>
+                <span class="ml-3 text-sm">Referral Pipeline</span>
+                <span class="ml-auto bg-brand-garnet text-white text-[10px] font-bold px-1.5 py-0.5 rounded">3</span>
+            </button>
+
+            <button onclick="router('patients')" id="nav-patients" class="nav-item w-full flex items-center px-4 py-3 group nav-inactive">
+                <i class="fa-solid fa-calendar-check w-6 text-center"></i>
+                <span class="ml-3 text-sm">Clinical Calendar</span>
+            </button>
+
+            <button onclick="router('revenue')" id="nav-revenue" class="nav-item w-full flex items-center px-4 py-3 group nav-inactive">
+                <i class="fa-solid fa-file-invoice-dollar w-6 text-center"></i>
+                <span class="ml-3 text-sm">Revenue Reporting</span>
+            </button>
+
+            <div class="my-6 border-t border-white/10 mx-4"></div>
+
+            <p class="px-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4">Administration</p>
+
+            <button onclick="router('compliance')" id="nav-compliance" class="nav-item w-full flex items-center px-4 py-3 group nav-inactive">
+                <i class="fa-solid fa-vault w-6 text-center"></i>
+                <span class="ml-3 text-sm">Compliance Vault</span>
+            </button>
+
+            <button onclick="router('listing')" id="nav-listing" class="nav-item w-full flex items-center px-4 py-3 group nav-inactive">
+                <i class="fa-solid fa-earth-americas w-6 text-center"></i>
+                <span class="ml-3 text-sm">Public Profile</span>
+            </button>
+        </nav>
+
+        <div class="p-4 bg-black/20">
+            <div class="flex items-center gap-3">
+                <img src="https://ui-avatars.com/api/?name=Margaret+W&background=C5A059&color=1B263B&bold=true" class="w-10 h-10 rounded border border-brand-gold">
+                <div class="overflow-hidden">
+                    <p class="text-sm font-bold text-white truncate">Margaret W.</p>
+                    <p class="text-[10px] text-brand-gold font-bold">AGENCY ADMIN</p>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col min-w-0 bg-brand-cream relative">
+        <!-- Header -->
+        <header class="h-20 bg-white border-b-4 border-brand-gold shadow-sm px-8 flex items-center justify-between z-10">
+            <div>
+                <h2 id="page-title" class="text-2xl font-black text-brand-navy uppercase">Referral Pipeline</h2>
+                <p id="page-subtitle" class="text-sm text-gray-500 font-light">Managing incoming leads and revenue projections.</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="text-right hidden sm:block">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Pipeline Value</p>
+                    <p class="text-lg font-black text-brand-navy">$18,450.00</p>
+                </div>
+                <div class="h-10 w-px bg-gray-200"></div>
+                <button class="btn btn-navy"><i class="fa-solid fa-plus mr-2"></i> New Inquiry</button>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-hidden relative">
+            
+            <!-- VIEW 1: REFERRAL DASHBOARD -->
+            <div id="view-dashboard" class="absolute inset-0 overflow-y-auto scroller p-8 fade-in">
+                
+                <!-- Referral Marketplace -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="lg:col-span-2 bg-white border border-gray-200 shadow-sm overflow-hidden rounded-md">
+                        <div class="p-5 bg-brand-navy text-white flex justify-between items-center">
+                            <h3 class="font-bold uppercase tracking-widest text-sm">Active Referral Queue</h3>
+                            <span class="text-[10px] bg-brand-gold text-brand-navy px-2 py-0.5 font-black rounded">LIVE UPDATES</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left">
+                                <thead class="bg-gray-50 text-[10px] font-bold text-gray-500 uppercase border-b border-gray-200">
+                                    <tr>
+                                        <th class="p-4">Patient ID</th>
+                                        <th class="p-4">Urgency</th>
+                                        <th class="p-4">Status</th>
+                                        <th class="p-4 text-right">Proj. Revenue</th>
+                                        <th class="p-4 text-right">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 text-sm">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-4 font-black text-brand-navy">#REF-1024</td>
+                                        <td class="p-4"><span class="pill pill-garnet">High</span></td>
+                                        <td class="p-4"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Inquiry</span></td>
+                                        <td class="p-4 text-right font-bold text-brand-navy">$4,200/mo</td>
+                                        <td class="p-4 text-right"><button class="text-brand-gold font-black uppercase text-xs">Review</button></td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-4 font-black text-brand-navy">#REF-1023</td>
+                                        <td class="p-4"><span class="pill pill-gold">Med</span></td>
+                                        <td class="p-4"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Triage</span></td>
+                                        <td class="p-4 text-right font-bold text-brand-navy">$2,800/mo</td>
+                                        <td class="p-4 text-right"><button class="text-brand-gold font-black uppercase text-xs">Review</button></td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="p-4 font-black text-brand-navy">#REF-1022</td>
+                                        <td class="p-4"><span class="pill pill-gold">Med</span></td>
+                                        <td class="p-4"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Review</span></td>
+                                        <td class="p-4 text-right font-bold text-brand-navy">$6,500/mo</td>
+                                        <td class="p-4 text-right"><button class="text-brand-gold font-black uppercase text-xs">Review</button></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Marketplace Card -->
+                    <div class="bg-white border border-gray-200 shadow-sm rounded-md p-6 border-t-8 border-t-brand-gold">
+                        <h3 class="text-brand-navy font-black text-xl uppercase tracking-tighter mb-2">Lead Marketplace</h3>
+                        <p class="text-xs text-gray-500 leading-relaxed mb-6">Boost your patient volume instantly. These are pre-screened inquiries within your service radius.</p>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded">
+                                <div>
+                                    <p class="text-xs font-black text-brand-navy">MQL LEAD</p>
+                                    <p class="text-[10px] text-gray-500 italic">Marketing Qualified</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-black text-brand-garnet">$50</p>
+                                    <button onclick="buyLead('MQL')" class="text-[10px] font-bold text-brand-gold uppercase tracking-widest hover:underline">Purchase</button>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-200 rounded">
+                                <div>
+                                    <p class="text-xs font-black text-brand-navy">SQL LEAD</p>
+                                    <p class="text-[10px] text-gray-500 italic">Sales Ready (Hot)</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-lg font-black text-brand-garnet">$250</p>
+                                    <button onclick="buyLead('SQL')" class="text-[10px] font-bold text-brand-gold uppercase tracking-widest hover:underline">Purchase</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p class="mt-6 text-[9px] text-gray-400 uppercase tracking-widest text-center">Protected by FAHC Lead Quality Guarantee</p>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="bg-white p-6 border border-gray-200 shadow-sm rounded-md h-64">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Pipeline Volume History</h4>
+                    <canvas id="pipelineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- VIEW 2: CLINICAL CALENDAR (ACTIVE PATIENTS) -->
+            <div id="view-patients" class="absolute inset-0 overflow-y-auto scroller p-8 hidden fade-in">
+                
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex gap-4">
+                        <button class="btn btn-outline px-4 py-2 text-xs">Today</button>
+                        <div class="flex items-center gap-2">
+                            <button class="w-8 h-8 rounded-full hover:bg-gray-200 transition"><i class="fa-solid fa-chevron-left"></i></button>
+                            <h3 class="font-black text-brand-navy text-lg uppercase tracking-tight">February 2026</h3>
+                            <button class="w-8 h-8 rounded-full hover:bg-gray-200 transition"><i class="fa-solid fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase"><span class="w-2 h-2 bg-sky-500 rounded-full"></span> Visit</span>
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase"><span class="w-2 h-2 bg-green-500 rounded-full"></span> Telehealth</span>
+                        <span class="flex items-center gap-1.5 text-[10px] font-bold uppercase"><span class="w-2 h-2 bg-orange-500 rounded-full"></span> Follow-up</span>
+                    </div>
+                </div>
+
+                <div class="bg-white border border-gray-300 rounded shadow-xl overflow-hidden">
+                    <div class="grid grid-cols-7 bg-brand-navy text-white text-[10px] font-bold uppercase tracking-widest">
+                        <div class="p-3 text-center border-r border-white/10">Sun</div>
+                        <div class="p-3 text-center border-r border-white/10">Mon</div>
+                        <div class="p-3 text-center border-r border-white/10">Tue</div>
+                        <div class="p-3 text-center border-r border-white/10">Wed</div>
+                        <div class="p-3 text-center border-r border-white/10">Thu</div>
+                        <div class="p-3 text-center border-r border-white/10">Fri</div>
+                        <div class="p-3 text-center">Sat</div>
+                    </div>
+                    <div class="calendar-grid">
+                        <!-- Simplified Calendar for Demo (Feb 2026 starts on Sunday) -->
+                        <div class="calendar-day">
+                            <p class="text-xs font-bold text-gray-400">1</p>
+                            <div onclick="openChart('Robert Miller')" class="event event-visit cursor-pointer">Visit: Miller, R</div>
+                        </div>
+                        <div class="calendar-day">
+                            <p class="text-xs font-bold text-gray-400">2</p>
+                            <div class="event event-tele">Tele: Jenkins, S</div>
+                        </div>
+                        <div class="calendar-day"><p class="text-xs font-bold text-gray-400">3</p></div>
+                        <div class="calendar-day">
+                            <p class="text-xs font-bold text-gray-400">4</p>
+                            <div class="event event-follow">Follow: Wong, K</div>
+                        </div>
+                        <div class="calendar-day"><p class="text-xs font-bold text-gray-400">5</p></div>
+                        <div class="calendar-day">
+                            <p class="text-xs font-bold text-gray-400">6</p>
+                            <div onclick="openChart('Alice Thorne')" class="event event-visit cursor-pointer">Visit: Thorne, A</div>
+                        </div>
+                        <div class="calendar-day"><p class="text-xs font-bold text-gray-400">7</p></div>
+                        <!-- ... repeated days simplified -->
+                         <div class="calendar-day bg-gray-50"><p class="text-xs font-bold text-brand-gold">8 (Today)</p>
+                            <div class="event event-visit">Visit: Miller, R</div>
+                            <div class="event event-visit">Visit: Thorne, A</div>
+                            <button onclick="openChart('Robert Miller')" class="mt-2 text-[9px] font-black text-brand-navy uppercase underline">View All Charts</button>
+                         </div>
+                         <div class="calendar-day"><p class="text-xs font-bold text-gray-400">9</p></div>
+                         <div class="calendar-day"><p class="text-xs font-bold text-gray-400">10</p></div>
+                         <div class="calendar-day"><p class="text-xs font-bold text-gray-400">11</p></div>
+                         <div class="calendar-day"><p class="text-xs font-bold text-gray-400">12</p></div>
+                         <div class="calendar-day"><p class="text-xs font-bold text-gray-400">13</p></div>
+                         <div class="calendar-day"><p class="text-xs font-bold text-gray-400">14</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER VIEWS PLACEHOLDERS -->
+            <div id="view-revenue" class="absolute inset-0 p-8 hidden fade-in">
+                 <div class="max-w-xl mx-auto bg-white p-12 text-center border-t-8 border-brand-gold shadow-lg">
+                    <i class="fa-solid fa-file-invoice text-5xl text-gray-200 mb-6"></i>
+                    <h3 class="text-2xl font-black uppercase text-brand-navy">Revenue Wizard</h3>
+                    <p class="text-slate-500 mb-8">Reporting portal for February 2026 commission cycles.</p>
+                    <button class="btn btn-gold w-full py-4">Start Reporting</button>
+                 </div>
+            </div>
+
+            <div id="view-compliance" class="absolute inset-0 p-8 hidden fade-in">
+                <div class="bg-white p-8 shadow-sm rounded border border-gray-200">
+                    <h3 class="font-black text-brand-navy uppercase mb-6">Compliance Vault</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded">
+                            <span class="text-sm font-bold text-brand-navy uppercase">State License (HCO)</span>
+                            <span class="pill pill-gold">Verified</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded">
+                            <span class="text-sm font-bold text-brand-navy uppercase">General Liability</span>
+                            <span class="pill pill-gold">Verified</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-red-50 border border-red-100 rounded">
+                            <span class="text-sm font-bold text-brand-garnet uppercase">W9 Form (2026)</span>
+                            <button class="text-xs font-black text-brand-garnet uppercase underline">Upload Missing</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-listing" class="absolute inset-0 overflow-y-auto p-8 hidden fade-in scroller">
+                 <div class="max-w-4xl mx-auto bg-white shadow-xl">
+                    <div class="h-48 bg-brand-navy relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1200&q=80" class="w-full h-full object-cover opacity-30">
+                        <div class="absolute bottom-6 left-8">
+                            <h3 class="text-3xl font-black text-white uppercase tracking-tighter">Golden Age Care</h3>
+                            <p class="text-brand-gold font-bold uppercase text-xs tracking-widest mt-1">Provider Profile Preview</p>
+                        </div>
+                    </div>
+                    <div class="p-12">
+                        <h4 class="font-black text-brand-navy border-b-2 border-brand-gold pb-2 mb-6 text-xs uppercase tracking-widest inline-block">Public Bio</h4>
+                        <p class="text-slate-600 leading-relaxed italic">"Providing specialized, high-touch senior care in Menlo Park. Our team focuses on post-operative recovery and long-term companionship."</p>
+                    </div>
+                 </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- PATIENT CHART MODAL (POPUP) -->
+    <div id="chart-modal" class="fixed inset-0 z-50 hidden modal-backdrop flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-2xl shadow-2xl animate-fade-in border-t-8 border-brand-gold overflow-hidden">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-brand-navy text-white">
+                <div>
+                    <h3 class="text-xl font-black uppercase tracking-tight" id="modal-patient-name">Patient Chart</h3>
+                    <p class="text-[10px] text-brand-gold font-bold tracking-widest">CLINICAL SUMMARY</p>
+                </div>
+                <button onclick="closeChart()" class="text-white/50 hover:text-white transition-colors"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-2 gap-8 mb-8">
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Status</p>
+                        <span class="pill pill-navy">Active Case</span>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Payer</p>
+                        <p class="text-sm font-black text-brand-navy">Medicare Advantage</p>
+                    </div>
+                    <div class="col-span-2">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Care Level</p>
+                        <p class="text-sm text-brand-navy leading-relaxed">24/7 Home Support. High-risk fall precautions. Medication management for hypertension and Stage 2 Dementia.</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <h4 class="text-xs font-black text-brand-navy uppercase tracking-widest border-b border-gray-100 pb-2">Recent Clinical Notes</h4>
+                    <div class="bg-gray-50 p-4 rounded-sm border border-gray-200">
+                        <p class="text-xs font-bold text-gray-400 mb-1">Feb 06, 2026 - Visit Note</p>
+                        <p class="text-sm italic text-gray-600">"Patient alert and oriented. Blood pressure stable at 128/84. Completed daily mobility exercises."</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-gray-50 flex justify-end gap-3 border-t border-gray-100">
+                <button onclick="closeChart()" class="btn btn-outline border-gray-300 text-gray-500 h-10 py-0">Close Chart</button>
+                <button class="btn btn-navy h-10 py-0">Edit Care Plan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Navigation ---
+        function router(viewId) {
+            const views = ['dashboard', 'patients', 'revenue', 'compliance', 'listing'];
+            views.forEach(id => document.getElementById(`view-${id}`).classList.add('hidden'));
+            document.getElementById(`view-${viewId}`).classList.remove('hidden');
+
+            const headerMap = {
+                'dashboard': { title: 'Referral Pipeline', sub: 'Managing incoming leads and revenue projections.' },
+                'patients': { title: 'Clinical Calendar', sub: 'Scheduled visits, telehealth, and care monitoring.' },
+                'revenue': { title: 'Revenue Reporting', sub: 'Declare monthly commissions and view history.' },
+                'compliance': { title: 'Compliance Vault', sub: 'Licensure and regulatory status oversight.' },
+                'listing': { title: 'Public Presence', sub: 'Manage how families see your agency profile.' }
+            };
+            document.getElementById('page-title').innerText = headerMap[viewId].title;
+            document.getElementById('page-subtitle').innerText = headerMap[viewId].sub;
+
+            const navs = ['nav-dashboard', 'nav-patients', 'nav-revenue', 'nav-compliance', 'nav-listing'];
+            navs.forEach(navId => {
+                const el = document.getElementById(navId);
+                el.classList.remove('nav-active');
+                el.classList.add('nav-inactive');
+            });
+            document.getElementById(`nav-${viewId}`).classList.add('nav-active');
+        }
+
+        // --- Modals ---
+        function openChart(name) {
+            document.getElementById('modal-patient-name').innerText = name;
+            document.getElementById('chart-modal').classList.remove('hidden');
+        }
+        function closeChart() {
+            document.getElementById('chart-modal').classList.add('hidden');
+        }
+
+        // --- Purchase Leads Simulation ---
+        function buyLead(type) {
+            const price = type === 'MQL' ? '$50.00' : '$250.00';
+            if(confirm(`Would you like to purchase a high-intent ${type} lead for ${price}? This will be added to your Referral Pipeline instantly.`)) {
+                alert(`Order confirmed. The ${type} lead has been added to your In-Basket.`);
+                // In a real app, this would trigger an API call and update the table
+            }
+        }
+
+        // --- Charts ---
+        window.onload = function() {
+            const ctx = document.getElementById('pipelineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan 20', 'Jan 25', 'Jan 30', 'Feb 04', 'Feb 08'],
+                    datasets: [{
+                        label: 'Referral Volume',
+                        data: [5, 8, 15, 12, 18],
+                        borderColor: '#C5A059',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        backgroundColor: 'rgba(197, 160, 89, 0.1)',
+                        pointBackgroundColor: '#1B263B'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { grid: { borderDash: [2, 2] } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        };
+    </script>
+</body>
+</html>
